@@ -8,7 +8,6 @@ import '../App.css'
 function Layout({children, title, cart, setCart, isAuth}) {
     return (
         <>
-
             <Header title={title}/>
             <div className="layout">
                 <Navbar isAuth={isAuth}/>

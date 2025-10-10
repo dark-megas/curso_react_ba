@@ -20,6 +20,11 @@ body {
   @apply max-w-7xl mx-auto px-4 py-8 w-full;
 }
 
+/* Header Styles */
+.header {
+  @apply bg-gradient-to-r from-amber-500 to-orange-500 text-white py-6 px-4;
+}
+
 /* Loader Styles */
 .loader-container {
   @apply flex flex-col items-center justify-center py-16;

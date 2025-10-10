@@ -1,16 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 function Header({title}) {
-    const fullTitle = title ? `${title} - E-Commerce Application` : 'E-Commerce Application';
-    return (
-        <head>
-            <title>
-                {fullTitle}
-            </title>
+    const fullTitle = title ? `${title} - PetStore Application` : 'PetStore Application';
 
-            <meta name="description" content="E-Commerce Application"/>
-            <link rel="icon" href="/favicon.ico"/>
-        </head>
+    useEffect(() => {
+        //cambiar el título de la página dinámicamente
+        document.title = fullTitle;
+    }, [fullTitle]);
+
+    return (
+        <header className="header"></header>
     );
 }
 

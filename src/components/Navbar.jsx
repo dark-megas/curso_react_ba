@@ -8,18 +8,18 @@ function Navbar({isAuth}) {
                     <Link to="/" className="navbar-logo">PetStore</Link>
                     <ul className="navbar-menu">
                         <li className="nav-item">
-                            <Link to="/" className="navbar-link">Home</Link>
+                            <Link to="/" className="navbar-link">Inicio</Link>
                         </li>
                         <li className="nav-item">
-                            <Link to="/products" className="navbar-link">Products</Link>
+                            <Link to="/products" className="navbar-link">Productos</Link>
                         </li>
                         <li className="nav-item">
-                            <Link to="/contact" className="navbar-link">Contact</Link>
+                            <Link to="/contact" className="navbar-link">Contacto</Link>
                         </li>
 
                         {isAuth ? (
                             <li className="nav-item">
-                                <Link to="/profile" className="navbar-link">Profile</Link>
+                                <Link to="/profile" className="navbar-link">Mi Cuenta</Link>
                             </li>
                         ) : (
                             <>
@@ -27,7 +27,7 @@ function Navbar({isAuth}) {
                                     <Link to="/login" className="navbar-link">Login</Link>
                                 </li>
                                 <li className="nav-item">
-                                    <Link to="/register" className="navbar-link">Register</Link>
+                                    <Link to="/register" className="navbar-link">Registro</Link>
                                 </li>
                             </>
                         )}
