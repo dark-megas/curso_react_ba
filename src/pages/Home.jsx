@@ -5,6 +5,8 @@ import ErrorMessage from '../components/ErrorMessage.jsx';
 
 function Home({ productos, loading, error }) {
     const productosDestacados = productos.slice(0, 3);
+    const CURRENCY_SYMBOL = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
+    const CURRENCY = import.meta.env.VITE_CURRENCY || 'ARS';
 
     return (
         <div className="home-container">
@@ -27,7 +29,7 @@ function Home({ productos, loading, error }) {
                             <div key={producto.id} className="featured-card">
                                 <img src={producto.avatar} alt={producto.nombre} className="featured-image" />
                                 <h3 className="featured-name">{producto.nombre}</h3>
-                                <p className="featured-price">${producto.precio.toLocaleString('es-CL')}</p>
+                                <p className="featured-price">{CURRENCY_SYMBOL}{producto.precio.toLocaleString('es-AR')} {CURRENCY}</p>
                                 <Link to={`/product/${producto.id}`} className="btn-featured">Ver Más</Link>
                             </div>
                         ))}
@@ -41,7 +43,7 @@ function Home({ productos, loading, error }) {
                 <div className="info-grid">
                     <div className="info-card">
                         <h3>🚚 Envío Gratis</h3>
-                        <p>En compras sobre $50.000</p>
+                        <p>En compras sobre {CURRENCY_SYMBOL}{parseFloat(import.meta.env.VITE_FREE_SHIPPING_THRESHOLD).toLocaleString('es-AR')}</p>
                     </div>
                     <div className="info-card">
                         <h3>🔒 Compra Segura</h3>

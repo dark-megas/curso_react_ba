@@ -6,11 +6,21 @@ import ErrorMessage from '../components/ErrorMessage.jsx';
 function Product({ productos, loading, error, cart, setCart }) {
     const { id } = useParams();
     const navigate = useNavigate();
+    const CURRENCY_SYMBOL = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
+    const CURRENCY = import.meta.env.VITE_CURRENCY || 'ARS';
 
     const producto = productos.find(p => p.id === parseInt(id));
 
     const handleAddToCart = () => {
         const productoEnCarrito = cart.find(item => item.id === producto.id);
+
+        // Validar stock disponible
+        const cantidadActualEnCarrito = productoEnCarrito ? productoEnCarrito.cantidad : 0;
+
+        if (cantidadActualEnCarrito >= producto.stock) {
+            alert(`No puedes agregar más de ${producto.stock} unidades. Stock máximo alcanzado.`);
+            return;
+        }
 
         if (productoEnCarrito) {
             setCart(cart.map(item =>
@@ -55,7 +65,7 @@ function Product({ productos, loading, error, cart, setCart }) {
                     <p className="product-detail-details">{producto.detalles}</p>
                     <p className="product-detail-category">Categoría: {producto.categoria || 'General'}</p>
                     <div className="product-detail-pricing">
-                        <p className="product-detail-price">${producto.precio.toLocaleString('es-CL')}</p>
+                        <p className="product-detail-price">{CURRENCY_SYMBOL}{producto.precio.toLocaleString('es-AR')} {CURRENCY}</p>
                         <p className="product-detail-stock">Stock disponible: {producto.stock} unidades</p>
                     </div>
                     <button
