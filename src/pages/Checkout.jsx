@@ -6,7 +6,6 @@ function Checkout({ usuario, cart, setCart }) {
     const [userInfo, setUserInfo] = useState(usuario);
     const navigate = useNavigate();
 
-
     const SHIPPING_COST = parseFloat(import.meta.env.VITE_SHIPPING_COST) || 0;
     const FREE_SHIPPING_THRESHOLD = parseFloat(import.meta.env.VITE_FREE_SHIPPING_THRESHOLD) || 50000;
     const TAX_RATE = parseFloat(import.meta.env.VITE_TAX_RATE) || 0;

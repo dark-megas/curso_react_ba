@@ -12,7 +12,7 @@ import Loader from "./components/Loader.jsx";
 import {Routes, Route, Navigate, useLocation} from 'react-router-dom'
 
 
-// Componente de ruta protegida sin usar hooks de router
+// Componente de ruta protegida
 function ProtectedRoute({isAuthenticated, children}) {
 
     const location = useLocation();
@@ -89,14 +89,13 @@ function App() {
                         </Layout>}/>
                     <Route path="/products" element={
                         <Layout isAuth={isAuthenticated} title="Productos" cart={cart} setCart={setCart}>
-                            <Products productos={productos} loading={loadingProductos} error={errorProductos}
-                                      cart={cart} setCart={setCart}/>
+                            <Products productos={productos} loading={loadingProductos} error={errorProductos} cart={cart} setCart={setCart}/>
                         </Layout>}/>
                     <Route path="/product/:id" element={
                         <Layout isAuth={isAuthenticated} title="Detalle del Producto" cart={cart} setCart={setCart}>
-                            <Product productos={productos} loading={loadingProductos} error={errorProductos} cart={cart}
-                                     setCart={setCart}/>
-                        </Layout>}/>
+                            <Product productos={productos} loading={loadingProductos} error={errorProductos} cart={cart} setCart={setCart}/>
+                        </Layout>
+                    }/>
                     <Route path="/profile" element={
                         <Layout isAuth={isAuthenticated} title="Perfil" cart={cart} setCart={setCart}>
                             <ProtectedRoute isAuthenticated={isAuthenticated}>
@@ -112,11 +111,17 @@ function App() {
                         </Layout>
                     }/>
                     <Route path="/contact"
-                           element={<Layout isAuth={isAuthenticated} title="Contacto" cart={cart} setCart={setCart}><Contact/></Layout>}/>
+                           element={
+                        <Layout isAuth={isAuthenticated} title="Contacto" cart={cart} setCart={setCart}>
+                            <Contact/>
+                        </Layout>
+                    }/>
                     <Route path="*"
-                           element={<Layout isAuth={isAuthenticated} title="Página no encontrada" cart={cart} setCart={setCart}><h1>404 Not
-                               Found</h1>
-                           </Layout>}/>
+                           element={
+                            <Layout isAuth={isAuthenticated} title="Página no encontrada" cart={cart} setCart={setCart}>
+                                <h1>404 Not Found</h1>
+                           </Layout>
+                    }/>
                 </Routes>
             )}
         </>
