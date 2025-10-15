@@ -16,11 +16,18 @@ function Navbar({isAuth}) {
                         <li className="nav-item">
                             <Link to="/contact" className="navbar-link">Contacto</Link>
                         </li>
-
+                        <li className="nav-item">
+                            <Link to="/checkout" className="navbar-link">Checkout</Link>
+                        </li>
                         {isAuth ? (
-                            <li className="nav-item">
-                                <Link to="/profile" className="navbar-link">Mi Cuenta</Link>
-                            </li>
+                            <>
+                                <li className="nav-item">
+                                    <Link to="/profile" className="navbar-link">Mi Cuenta</Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link to="/logout" className="navbar-link">Logout</Link>
+                                </li>
+                            </>
                         ) : (
                             <>
                                 <li className="nav-item">
@@ -31,9 +38,6 @@ function Navbar({isAuth}) {
                                 </li>
                             </>
                         )}
-                        <li className="nav-item">
-                            <Link to="/checkout" className="navbar-link">Checkout</Link>
-                        </li>
                     </ul>
                 </div>
             </nav>

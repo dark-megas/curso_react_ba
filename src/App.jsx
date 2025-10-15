@@ -11,11 +11,11 @@ import Contact from "./pages/Contact.jsx";
 import Loader from "./components/Loader.jsx";
 import {Routes, Route, Navigate, useLocation} from 'react-router-dom'
 
-
 // Componente de ruta protegida
 function ProtectedRoute({isAuthenticated, children}) {
 
     const location = useLocation();
+
     //Si tiene productos en el carrito y no está autenticado, redirige a registro
     if (location.pathname === '/checkout' && !isAuthenticated) {
         return <Navigate to="/register" replace/>;
@@ -25,6 +25,15 @@ function ProtectedRoute({isAuthenticated, children}) {
         return <Navigate to="/login" replace/>;
     }
     return children;
+}
+
+function Logout({setIsAuthenticated, setUsuario}) {
+    useEffect(() => {
+        setIsAuthenticated(false);
+        setUsuario({nombre: "", email: "", telefono: "", direccion: ""});
+    }, [setIsAuthenticated, setUsuario]);
+
+    return null;
 }
 
 function App() {
@@ -65,9 +74,9 @@ function App() {
                 setLoadingProductos(false);
             }
         };
-
         fetchProductos();
     }, []);
+
 
     return (
         <>
@@ -122,6 +131,14 @@ function App() {
                                 <h1>404 Not Found</h1>
                            </Layout>
                     }/>
+                    {/*Logout*/}
+                    <Route path="/logout" element={
+                        <Layout isAuth={isAuthenticated} title="Logout" cart={cart} setCart={setCart}>
+                            <Logout setIsAuthenticated={setIsAuthenticated} setUsuario={setUsuario}/>
+                            <h1>Has cerrado sesión</h1>
+                        </Layout>
+                    }/>
+
                 </Routes>
             )}
         </>
