@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext.jsx';
 
-function Checkout({ usuario, cart, setCart }) {
+function Checkout() {
+    const { usuario, cart, setCart } = useAppContext();
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [userInfo, setUserInfo] = useState(usuario);
     const navigate = useNavigate();

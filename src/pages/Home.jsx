@@ -2,11 +2,16 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Loader from '../components/Loader.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
+import { useAppContext } from '../context/AppContext.jsx';
 
-function Home({ productos, loading, error }) {
+function Home() {
+
+    const {  productos , loadingProductos , errorProductos } = useAppContext();
     const productosDestacados = productos.slice(0, 3);
     const CURRENCY_SYMBOL = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
     const CURRENCY = import.meta.env.VITE_CURRENCY || 'ARS';
+    const loading = loadingProductos;
+    const error = errorProductos;
 
     return (
         <div className="home-container">

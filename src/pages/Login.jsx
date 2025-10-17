@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext.jsx';
 
-function Login({ setIsAuthenticated, setUsuario, usuarios }) {
+function Login() {
+    const { setIsAuthenticated, setUsuario, usuarios } = useAppContext();
     const [formData, setFormData] = useState({
         email: '',
         password: ''

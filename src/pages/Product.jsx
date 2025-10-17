@@ -1,9 +1,11 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext.jsx';
 import Loader from '../components/Loader.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 
-function Product({ productos, loading, error, cart, setCart }) {
+function Product() {
+    const { productos, loadingProductos, errorProductos, cart, setCart } = useAppContext();
     const { id } = useParams();
     const navigate = useNavigate();
     const CURRENCY_SYMBOL = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
@@ -33,12 +35,12 @@ function Product({ productos, loading, error, cart, setCart }) {
         }
     };
 
-    if (loading) {
+    if (loadingProductos) {
         return <Loader message="Cargando producto..." />;
     }
 
-    if (error) {
-        return <ErrorMessage message={error} />;
+    if (errorProductos) {
+        return <ErrorMessage message={errorProductos} />;
     }
 
     if (!producto) {

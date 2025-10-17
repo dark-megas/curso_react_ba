@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext.jsx';
 
-function Register({ usuarios, setUsuarios }) {
+function Register() {
+    const { usuarios, setUsuarios } = useAppContext();
     const [formData, setFormData] = useState({
         nombre: '',
         email: '',

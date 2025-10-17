@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useAppContext } from '../context/AppContext.jsx';
 
-function Profile({ usuario, setUsuario }) {
+function Profile() {
+    const { usuario, setUsuario } = useAppContext();
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         nombre: usuario.nombre,

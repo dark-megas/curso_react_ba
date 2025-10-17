@@ -1,4 +1,5 @@
-import {useState, useEffect} from 'react'
+import {useEffect} from 'react'
+import {AppProvider, useAppContext} from "./context/AppContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -12,8 +13,8 @@ import Loader from "./components/Loader.jsx";
 import {Routes, Route, Navigate, useLocation} from 'react-router-dom'
 
 // Componente de ruta protegida
-function ProtectedRoute({isAuthenticated, children}) {
-
+function ProtectedRoute({children}) {
+    const {isAuthenticated} = useAppContext();
     const location = useLocation();
 
     //Si tiene productos en el carrito y no está autenticado, redirige a registro
@@ -27,7 +28,9 @@ function ProtectedRoute({isAuthenticated, children}) {
     return children;
 }
 
-function Logout({setIsAuthenticated, setUsuario}) {
+function Logout() {
+    const {setIsAuthenticated, setUsuario} = useAppContext();
+
     useEffect(() => {
         setIsAuthenticated(false);
         setUsuario({nombre: "", email: "", telefono: "", direccion: ""});
@@ -36,47 +39,8 @@ function Logout({setIsAuthenticated, setUsuario}) {
     return null;
 }
 
-function App() {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [usuario, setUsuario] = useState({nombre: "", email: "", telefono: "", direccion: ""});
-    const [cart, setCart] = useState([]);
-    const [usuarios, setUsuarios] = useState([]);
-
-    // Estado para productos desde la API
-    const [productos, setProductos] = useState([]);
-    const [loadingProductos, setLoadingProductos] = useState(true);
-    const [errorProductos, setErrorProductos] = useState(null);
-
-    useEffect(() => {
-        const fetchProductos = async () => {
-            try {
-                setLoadingProductos(true);
-                setErrorProductos(null);
-
-                const response = await fetch(import.meta.env.VITE_API_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${import.meta.env.VITE_API_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error al cargar productos: ${response.status}`);
-                }
-
-                const data = await response.json();
-                setProductos(data.productos || data);
-            } catch (err) {
-                console.error('Error fetching productos:', err);
-                setErrorProductos(err.message);
-            } finally {
-                setLoadingProductos(false);
-            }
-        };
-        fetchProductos();
-    }, []);
-
+function AppRoutes() {
+    const { loadingProductos } = useAppContext();
 
     return (
         <>
@@ -85,56 +49,65 @@ function App() {
             ) : (
                 <Routes>
                     <Route path="/" element={
-                        <Layout isAuth={isAuthenticated} title="Inicio" cart={cart} setCart={setCart}>
-                            <Home productos={productos} loading={loadingProductos} error={errorProductos}/>
+                        <Layout  title="Inicio">
+                            <Home/>
                         </Layout>}/>
+
                     <Route path="/login" element={
-                        <Layout isAuth={isAuthenticated} title="Iniciar Sesión" cart={cart} setCart={setCart}>
-                            <Login setIsAuthenticated={setIsAuthenticated} setUsuario={setUsuario} usuarios={usuarios}/>
+                        <Layout  title="Iniciar Sesión">
+                            <Login/>
                         </Layout>}/>
+
                     <Route path="/register" element={
-                        <Layout isAuth={isAuthenticated} title="Registrarse" cart={cart} setCart={setCart}>
-                            <Register usuarios={usuarios} setUsuarios={setUsuarios}/>
+                        <Layout  title="Registrarse">
+                            <Register/>
                         </Layout>}/>
+
                     <Route path="/products" element={
-                        <Layout isAuth={isAuthenticated} title="Productos" cart={cart} setCart={setCart}>
-                            <Products productos={productos} loading={loadingProductos} error={errorProductos} cart={cart} setCart={setCart}/>
+                        <Layout  title="Productos">
+                            <Products/>
                         </Layout>}/>
+
                     <Route path="/product/:id" element={
-                        <Layout isAuth={isAuthenticated} title="Detalle del Producto" cart={cart} setCart={setCart}>
-                            <Product productos={productos} loading={loadingProductos} error={errorProductos} cart={cart} setCart={setCart}/>
+                        <Layout  title="Detalle del Producto">
+                            <Product/>
                         </Layout>
                     }/>
+
                     <Route path="/profile" element={
-                        <Layout isAuth={isAuthenticated} title="Perfil" cart={cart} setCart={setCart}>
-                            <ProtectedRoute isAuthenticated={isAuthenticated}>
-                                <Profile usuario={usuario} setUsuario={setUsuario}/>
+                        <Layout  title="Perfil">
+                            <ProtectedRoute>
+                                <Profile/>
                             </ProtectedRoute>
                         </Layout>
                     }/>
+
                     <Route path="/checkout" element={
-                        <Layout isAuth={isAuthenticated} title="Checkout" cart={cart} setCart={setCart}>
-                            <ProtectedRoute isAuthenticated={isAuthenticated}>
-                                <Checkout usuario={usuario} cart={cart} setCart={setCart}/>
+                        <Layout  title="Checkout">
+                            <ProtectedRoute>
+                                <Checkout/>
                             </ProtectedRoute>
                         </Layout>
                     }/>
+
                     <Route path="/contact"
                            element={
-                        <Layout isAuth={isAuthenticated} title="Contacto" cart={cart} setCart={setCart}>
+                        <Layout  title="Contacto">
                             <Contact/>
                         </Layout>
                     }/>
+
                     <Route path="*"
                            element={
-                            <Layout isAuth={isAuthenticated} title="Página no encontrada" cart={cart} setCart={setCart}>
+                            <Layout  title="Página no encontrada">
                                 <h1>404 Not Found</h1>
                            </Layout>
                     }/>
+
                     {/*Logout*/}
                     <Route path="/logout" element={
-                        <Layout isAuth={isAuthenticated} title="Logout" cart={cart} setCart={setCart}>
-                            <Logout setIsAuthenticated={setIsAuthenticated} setUsuario={setUsuario}/>
+                        <Layout  title="Logout">
+                            <Logout/>
                             <h1>Has cerrado sesión</h1>
                         </Layout>
                     }/>
@@ -145,4 +118,13 @@ function App() {
     )
 }
 
-export default App
+function App() {
+    return (
+        <AppProvider>
+            <AppRoutes/>
+        </AppProvider>
+    )
+}
+
+export default App;
+

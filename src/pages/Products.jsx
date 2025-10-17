@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAppContext } from '../context/AppContext.jsx';
 import Loader from '../components/Loader.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 
-function Products({ productos, loading, error, cart, setCart }) {
+function Products() {
+    const { productos, loadingProductos, errorProductos, cart, setCart } = useAppContext();
     const CURRENCY_SYMBOL = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
     const CURRENCY = import.meta.env.VITE_CURRENCY || 'ARS';
 
@@ -29,12 +31,12 @@ function Products({ productos, loading, error, cart, setCart }) {
         }
     };
 
-    if (loading) {
+    if (loadingProductos) {
         return <Loader message="Cargando productos..." />;
     }
 
-    if (error) {
-        return <ErrorMessage message={error} />;
+    if (errorProductos) {
+        return <ErrorMessage message={errorProductos} />;
     }
 
     if (!productos || productos.length === 0) {
