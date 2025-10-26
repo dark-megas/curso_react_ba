@@ -1,0 +1,46 @@
+node_modules
+dist
+.git
+.gitignore
+README.md
+.env
+.env.local
+.vscode
+.idea
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+:{$PORT:3000}
+
+# Configuración de logging
+log {
+    output stdout
+    format console
+}
+
+# Configurar headers de seguridad
+header {
+    # Habilitar HSTS
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    # Prevenir MIME sniffing
+    X-Content-Type-Options "nosniff"
+    # Habilitar XSS protection
+    X-Frame-Options "SAMEORIGIN"
+    # CSP básico
+    X-XSS-Protection "1; mode=block"
+}
+
+# Codificación
+encode gzip zstd
+
+# Servir archivos estáticos desde /srv
+root * /srv
+
+# Intentar servir archivos, si no existe, redirigir a index.html para SPA
+try_files {path} /index.html
+
+# Servir archivos
+file_server
+
