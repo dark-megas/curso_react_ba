@@ -5,9 +5,11 @@ import Navbar from "./Navbar.jsx";
 import Cart from "./Cart.jsx";
 import '../App.css'
 import { useAppContext } from '../context/AppContext.jsx';
+import { useSupabase } from '../context/SupabaseContext.jsx';
 
 function Layout({children, title}) {
-    const { cart, setCart, isAuthenticated } = useAppContext();
+    const { cart, setCart } = useAppContext();
+    const { isAuthenticated } = useSupabase();
 
     return (
         <>

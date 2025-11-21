@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext.jsx';
+import { useSupabase } from '../context/SupabaseContext.jsx';
 
 function Register() {
-    const { usuarios, setUsuarios } = useAppContext();
+    const { register, loading } = useSupabase();
     const [formData, setFormData] = useState({
         nombre: '',
         email: '',
@@ -13,6 +13,7 @@ function Register() {
         direccion: ''
     });
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -22,9 +23,10 @@ function Register() {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccess('');
 
         if (formData.password !== formData.confirmPassword) {
             setError('Las contraseñas no coinciden');
@@ -36,23 +38,22 @@ function Register() {
             return;
         }
 
-        const usuarioExiste = usuarios.find(u => u.email === formData.email);
-        if (usuarioExiste) {
-            setError('El email ya está registrado');
-            return;
-        }
-
-        const nuevoUsuario = {
-            id: usuarios.length + 1,
+        const metadata = {
             nombre: formData.nombre,
-            email: formData.email,
-            password: formData.password,
             telefono: formData.telefono,
             direccion: formData.direccion
         };
 
-        setUsuarios([...usuarios, nuevoUsuario]);
-        navigate('/login');
+        const { error: registerError } = await register(formData.email, formData.password, metadata);
+
+        if (registerError) {
+            setError(registerError);
+        } else {
+            setSuccess('Registro exitoso. Revisa tu email para confirmar tu cuenta.');
+            setTimeout(() => {
+                navigate('/login');
+            }, 2000);
+        }
     };
 
     return (
@@ -60,6 +61,7 @@ function Register() {
             <div className="form-card">
                 <h2 className="form-title">Registrarse</h2>
                 {error && <div className="form-error">{error}</div>}
+                {success && <div className="form-success">{success}</div>}
                 <form onSubmit={handleSubmit} className="form">
                     <div className="form-group">
                         <label htmlFor="nombre">Nombre Completo</label>
@@ -131,7 +133,9 @@ function Register() {
                             className="form-input"
                         />
                     </div>
-                    <button type="submit" className="btn-submit">Registrarse</button>
+                    <button type="submit" className="btn-submit" disabled={loading}>
+                        {loading ? 'Registrando...' : 'Registrarse'}
+                    </button>
                 </form>
                 <p className="form-footer">
                     ¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a>

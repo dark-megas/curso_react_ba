@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext.jsx';
+import { useSupabase } from '../context/SupabaseContext.jsx';
 
 function Login() {
-    const { setIsAuthenticated, setUsuario, usuarios } = useAppContext();
+    const { login, loading } = useSupabase();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -18,25 +18,16 @@ function Login() {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
-        const usuarioEncontrado = usuarios.find(
-            u => u.email === formData.email && u.password === formData.password
-        );
+        const { error: loginError } = await login(formData.email, formData.password);
 
-        if (usuarioEncontrado) {
-            setIsAuthenticated(true);
-            setUsuario({
-                nombre: usuarioEncontrado.nombre,
-                email: usuarioEncontrado.email,
-                telefono: usuarioEncontrado.telefono || '',
-                direccion: usuarioEncontrado.direccion || ''
-            });
-            navigate('/profile');
+        if (loginError) {
+            setError(loginError);
         } else {
-            setError('Email o contraseña incorrectos');
+            navigate('/profile');
         }
     };
 
@@ -70,7 +61,9 @@ function Login() {
                             className="form-input"
                         />
                     </div>
-                    <button type="submit" className="btn-submit">Iniciar Sesión</button>
+                    <button type="submit" className="btn-submit" disabled={loading}>
+                        {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                    </button>
                 </form>
                 <p className="form-footer">
                     ¿No tienes cuenta? <a href="/register">Regístrate aquí</a>

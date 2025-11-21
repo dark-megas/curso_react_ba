@@ -1,5 +1,7 @@
 import {useEffect} from 'react'
 import {AppProvider, useAppContext} from "./context/AppContext.jsx";
+import {SupabaseProvider, useSupabase} from "./context/SupabaseContext.jsx";
+import {AdminAuthProvider} from "./admin/context/AdminAuthContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -10,11 +12,18 @@ import Home from "./pages/Home.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import Contact from "./pages/Contact.jsx";
 import Loader from "./components/Loader.jsx";
+import AdminLogin from "./admin/pages/AdminLogin.jsx";
+import Dashboard from "./admin/pages/Dashboard.jsx";
+import ProductsAdmin from "./admin/pages/ProductsAdmin.jsx";
+import CategoriesAdmin from "./admin/pages/CategoriesAdmin.jsx";
+import OrdersAdmin from "./admin/pages/OrdersAdmin.jsx";
+import UsersAdmin from "./admin/pages/UsersAdmin.jsx";
+import AdminProtectedRoute from "./admin/components/AdminProtectedRoute.jsx";
 import {Routes, Route, Navigate, useLocation} from 'react-router-dom'
 
 // Componente de ruta protegida
 function ProtectedRoute({children}) {
-    const {isAuthenticated} = useAppContext();
+    const {isAuthenticated} = useSupabase();
     const location = useLocation();
 
     //Si tiene productos en el carrito y no está autenticado, redirige a registro
@@ -29,12 +38,11 @@ function ProtectedRoute({children}) {
 }
 
 function Logout() {
-    const {setIsAuthenticated, setUsuario} = useAppContext();
+    const { logout } = useSupabase();
 
     useEffect(() => {
-        setIsAuthenticated(false);
-        setUsuario({nombre: "", email: "", telefono: "", direccion: ""});
-    }, [setIsAuthenticated, setUsuario]);
+        logout();
+    }, [logout]);
 
     return null;
 }
@@ -112,6 +120,41 @@ function AppRoutes() {
                         </Layout>
                     }/>
 
+                    {/* Admin Routes */}
+                    <Route path="/admin/login" element={<AdminLogin />} />
+
+                    <Route path="/admin/dashboard" element={
+                        <AdminProtectedRoute>
+                            <Dashboard />
+                        </AdminProtectedRoute>
+                    } />
+
+                    <Route path="/admin/products" element={
+                        <AdminProtectedRoute>
+                            <ProductsAdmin />
+                        </AdminProtectedRoute>
+                    } />
+
+                    <Route path="/admin/categories" element={
+                        <AdminProtectedRoute>
+                            <CategoriesAdmin />
+                        </AdminProtectedRoute>
+                    } />
+
+                    <Route path="/admin/orders" element={
+                        <AdminProtectedRoute>
+                            <OrdersAdmin />
+                        </AdminProtectedRoute>
+                    } />
+
+                    <Route path="/admin/users" element={
+                        <AdminProtectedRoute>
+                            <UsersAdmin />
+                        </AdminProtectedRoute>
+                    } />
+
+                    <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+
                 </Routes>
             )}
         </>
@@ -120,9 +163,13 @@ function AppRoutes() {
 
 function App() {
     return (
-        <AppProvider>
-            <AppRoutes/>
-        </AppProvider>
+        <SupabaseProvider>
+            <AdminAuthProvider>
+                <AppProvider>
+                    <AppRoutes/>
+                </AppProvider>
+            </AdminAuthProvider>
+        </SupabaseProvider>
     )
 }
 

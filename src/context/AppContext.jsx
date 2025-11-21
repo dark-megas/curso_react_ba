@@ -15,10 +15,8 @@ export const useAppContext = () => {
 
 // Provider del contexto
 export const AppProvider = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [usuario, setUsuario] = useState({ nombre: "", email: "", telefono: "", direccion: "" });
+    // Estado del carrito de compras
     const [cart, setCart] = useState([]);
-    const [usuarios, setUsuarios] = useState([]);
 
     // Estado para productos desde la API
     const [productos, setProductos] = useState([]);
@@ -58,14 +56,8 @@ export const AppProvider = ({ children }) => {
 
     // Valor del contexto que se compartira
     const value = {
-        isAuthenticated,
-        setIsAuthenticated,
-        usuario,
-        setUsuario,
         cart,
         setCart,
-        usuarios,
-        setUsuarios,
         productos,
         loadingProductos,
         errorProductos
