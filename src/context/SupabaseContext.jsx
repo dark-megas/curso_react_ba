@@ -125,7 +125,7 @@ export const SupabaseProvider = ({ children }) => {
      * @param role {string} role - Rol del usuario (por defecto 'user')
      * @returns {object} - { user, session, error }
      */
-    const register = async (email, password, metadata = {}, role = 'admin') => {
+    const register = async (email, password, metadata = {}, role = 'user') => {
         try {
             setError(null);
             setLoading(true);

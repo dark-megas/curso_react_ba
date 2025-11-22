@@ -6,13 +6,13 @@ import '../App.css'
 import { useSupabase } from '../context/SupabaseContext.jsx';
 
 function Layout({ children, title }) {
-    const { isAuthenticated } = useSupabase();
+    const { isAuthenticated, getProfile, user } = useSupabase();
 
     return (
         <>
             <Header title={title} />
             <div className="layout">
-                <Navbar isAuth={isAuthenticated} />
+                <Navbar isAuth={isAuthenticated} getProfile={user} />
                 <main className="main-content">
                     {children}
                 </main>
