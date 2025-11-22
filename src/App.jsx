@@ -1,5 +1,7 @@
-import {useEffect} from 'react'
-import {AppProvider, useAppContext} from "./context/AppContext.jsx";
+import { useEffect } from 'react'
+import { AppProvider, useAppContext } from "./context/AppContext.jsx";
+import { SupabaseProvider, useSupabase } from "./context/SupabaseContext.jsx";
+import { AdminAuthProvider } from "./admin/context/AdminAuthContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -10,33 +12,39 @@ import Home from "./pages/Home.jsx";
 import Checkout from "./pages/Checkout.jsx";
 import Contact from "./pages/Contact.jsx";
 import Loader from "./components/Loader.jsx";
-import {Routes, Route, Navigate, useLocation} from 'react-router-dom'
+import AdminLogin from "./admin/pages/AdminLogin.jsx";
+import Dashboard from "./admin/pages/Dashboard.jsx";
+import ProductsAdmin from "./admin/pages/ProductsAdmin.jsx";
+import CategoriesAdmin from "./admin/pages/CategoriesAdmin.jsx";
+import OrdersAdmin from "./admin/pages/OrdersAdmin.jsx";
+import UsersAdmin from "./admin/pages/UsersAdmin.jsx";
+import AdminProtectedRoute from "./admin/components/AdminProtectedRoute.jsx";
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 
 // Componente de ruta protegida
-function ProtectedRoute({children}) {
-    const {isAuthenticated} = useAppContext();
+function ProtectedRoute({ children }) {
+    const { isAuthenticated } = useSupabase();
     const location = useLocation();
 
     //Si tiene productos en el carrito y no está autenticado, redirige a registro
     if (location.pathname === '/checkout' && !isAuthenticated) {
-        return <Navigate to="/register" replace/>;
+        return <Navigate to="/register" replace />;
     }
 
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace/>;
+        return <Navigate to="/login" replace />;
     }
     return children;
 }
 
 function Logout() {
-    const {setIsAuthenticated, setUsuario} = useAppContext();
+    const { logout } = useSupabase();
 
     useEffect(() => {
-        setIsAuthenticated(false);
-        setUsuario({nombre: "", email: "", telefono: "", direccion: ""});
-    }, [setIsAuthenticated, setUsuario]);
+        logout();
+    }, [logout]);
 
-    return null;
+    return <Navigate to="/" />;
 }
 
 function AppRoutes() {
@@ -45,72 +53,108 @@ function AppRoutes() {
     return (
         <>
             {loadingProductos ? (
-                <Loader message="Cargando aplicación..."/>
+                <Loader message="Cargando aplicación..." />
             ) : (
                 <Routes>
                     <Route path="/" element={
-                        <Layout  title="Inicio">
-                            <Home/>
-                        </Layout>}/>
+                        <Layout title="Inicio">
+                            <Home />
+                        </Layout>} />
 
                     <Route path="/login" element={
-                        <Layout  title="Iniciar Sesión">
-                            <Login/>
-                        </Layout>}/>
+                        <Layout title="Iniciar Sesión">
+                            <Login />
+                        </Layout>} />
 
                     <Route path="/register" element={
-                        <Layout  title="Registrarse">
-                            <Register/>
-                        </Layout>}/>
+                        <Layout title="Registrarse">
+                            <Register />
+                        </Layout>} />
 
                     <Route path="/products" element={
-                        <Layout  title="Productos">
-                            <Products/>
-                        </Layout>}/>
+                        <Layout title="Productos">
+                            <Products />
+                        </Layout>} />
 
                     <Route path="/product/:id" element={
-                        <Layout  title="Detalle del Producto">
-                            <Product/>
+                        <Layout title="Detalle del Producto">
+                            <Product />
                         </Layout>
-                    }/>
+                    } />
 
                     <Route path="/profile" element={
-                        <Layout  title="Perfil">
+                        <Layout title="Perfil">
                             <ProtectedRoute>
-                                <Profile/>
+                                <Profile />
                             </ProtectedRoute>
                         </Layout>
-                    }/>
+                    } />
 
                     <Route path="/checkout" element={
-                        <Layout  title="Checkout">
+                        <Layout title="Checkout">
                             <ProtectedRoute>
-                                <Checkout/>
+                                <Checkout />
                             </ProtectedRoute>
                         </Layout>
-                    }/>
+                    } />
 
                     <Route path="/contact"
-                           element={
-                        <Layout  title="Contacto">
-                            <Contact/>
-                        </Layout>
-                    }/>
+                        element={
+                            <Layout title="Contacto">
+                                <Contact />
+                            </Layout>
+                        } />
 
                     <Route path="*"
-                           element={
-                            <Layout  title="Página no encontrada">
+                        element={
+                            <Layout title="Página no encontrada">
                                 <h1>404 Not Found</h1>
-                           </Layout>
-                    }/>
+                            </Layout>
+                        } />
 
                     {/*Logout*/}
                     <Route path="/logout" element={
-                        <Layout  title="Logout">
-                            <Logout/>
+                        <Layout title="Logout">
+                            <Logout />
+
                             <h1>Has cerrado sesión</h1>
                         </Layout>
-                    }/>
+                    } />
+
+                    {/* Admin Routes */}
+                    <Route path="/admin/login" element={<AdminLogin />} />
+
+                    <Route path="/admin/dashboard" element={
+                        <AdminProtectedRoute>
+                            <Dashboard />
+                        </AdminProtectedRoute>
+                    } />
+
+                    <Route path="/admin/products" element={
+                        <AdminProtectedRoute>
+                            <ProductsAdmin />
+                        </AdminProtectedRoute>
+                    } />
+
+                    <Route path="/admin/categories" element={
+                        <AdminProtectedRoute>
+                            <CategoriesAdmin />
+                        </AdminProtectedRoute>
+                    } />
+
+                    <Route path="/admin/orders" element={
+                        <AdminProtectedRoute>
+                            <OrdersAdmin />
+                        </AdminProtectedRoute>
+                    } />
+
+                    <Route path="/admin/users" element={
+                        <AdminProtectedRoute>
+                            <UsersAdmin />
+                        </AdminProtectedRoute>
+                    } />
+
+                    <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
 
                 </Routes>
             )}
@@ -120,9 +164,13 @@ function AppRoutes() {
 
 function App() {
     return (
-        <AppProvider>
-            <AppRoutes/>
-        </AppProvider>
+        <SupabaseProvider>
+            <AdminAuthProvider>
+                <AppProvider>
+                    <AppRoutes />
+                </AppProvider>
+            </AdminAuthProvider>
+        </SupabaseProvider>
     )
 }
 

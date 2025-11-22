@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useProducts } from '../hooks/useProducts';
 
 // Crear el contexto
 const AppContext = createContext();
@@ -13,62 +14,132 @@ export const useAppContext = () => {
     return context;
 };
 
+// Constante para la clave de localStorage
+const CART_STORAGE_KEY = 'petstore_cart';
+
 // Provider del contexto
 export const AppProvider = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [usuario, setUsuario] = useState({ nombre: "", email: "", telefono: "", direccion: "" });
-    const [cart, setCart] = useState([]);
-    const [usuarios, setUsuarios] = useState([]);
+    // Usar el hook de productos
+    const {
+        products: productos,
+        categories,
+        loading: loadingProductos,
+        error: errorProductos,
+        fetchProducts,
+        fetchCategories,
+        getProductById,
+        getProductsByCategory,
+        searchProducts,
+        getFeaturedProducts,
+        checkStock
+    } = useProducts();
 
-    // Estado para productos desde la API
-    const [productos, setProductos] = useState([]);
-    const [loadingProductos, setLoadingProductos] = useState(true);
-    const [errorProductos, setErrorProductos] = useState(null);
+    // Estado del carrito de compras con localStorage
+    const [cart, setCartState] = useState(() => {
+        // Inicializar desde localStorage
+        try {
+            const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+            return savedCart ? JSON.parse(savedCart) : [];
+        } catch (error) {
+            console.error('Error al cargar carrito desde localStorage:', error);
+            return [];
+        }
+    });
 
-    // Cargar productos desde la API
-    useEffect(() => {
-        const fetchProductos = async () => {
-            try {
-                setLoadingProductos(true);
-                setErrorProductos(null);
+    // Función para actualizar el carrito y sincronizar con localStorage
+    const setCart = (newCart) => {
+        try {
+            // Si newCart es una función, ejecutarla con el estado actual
+            const updatedCart = typeof newCart === 'function' ? newCart(cart) : newCart;
 
-                const response = await fetch(import.meta.env.VITE_API_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${import.meta.env.VITE_API_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
+            // Actualizar estado
+            setCartState(updatedCart);
 
-                if (!response.ok) {
-                    throw new Error(`Error al cargar productos: ${response.status}`);
-                }
+            // Guardar en localStorage
+            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(updatedCart));
+        } catch (error) {
+            console.error('Error al guardar carrito en localStorage:', error);
+        }
+    };
 
-                const data = await response.json();
-                setProductos(data.productos || data);
-            } catch (err) {
-                console.error('Error fetching productos:', err);
-                setErrorProductos(err.message);
-            } finally {
-                setLoadingProductos(false);
+    // Función para agregar producto al carrito
+    const addToCart = (product, quantity = 1) => {
+        setCart(prevCart => {
+            const existingItem = prevCart.find(item => item.id === product.id);
+
+            if (existingItem) {
+                // Si ya existe, aumentar cantidad
+                return prevCart.map(item =>
+                    item.id === product.id
+                        ? { ...item, cantidad: item.cantidad + quantity }
+                        : item
+                );
+            } else {
+                // Si no existe, agregarlo
+                return [...prevCart, { ...product, cantidad: quantity }];
             }
-        };
-        fetchProductos();
-    }, []);
+        });
+    };
 
-    // Valor del contexto que se compartira
+    // Función para remover producto del carrito
+    const removeFromCart = (productId) => {
+        setCart(prevCart => prevCart.filter(item => item.id !== productId));
+    };
+
+    // Función para actualizar cantidad de un producto
+    const updateCartQuantity = (productId, quantity) => {
+        if (quantity <= 0) {
+            removeFromCart(productId);
+        } else {
+            setCart(prevCart =>
+                prevCart.map(item =>
+                    item.id === productId
+                        ? { ...item, cantidad: quantity }
+                        : item
+                )
+            );
+        }
+    };
+
+    // Función para limpiar el carrito
+    const clearCart = () => {
+        setCart([]);
+    };
+
+    // Calcular total del carrito
+    const getCartTotal = () => {
+        return cart.reduce((total, item) => total + (item.precio * item.cantidad), 0);
+    };
+
+    // Calcular cantidad total de items
+    const getCartItemsCount = () => {
+        return cart.reduce((total, item) => total + item.cantidad, 0);
+    };
+
+    // Valor del contexto que se compartirá
     const value = {
-        isAuthenticated,
-        setIsAuthenticated,
-        usuario,
-        setUsuario,
+        // Productos
+        productos,
+        categories,
+        loadingProductos,
+        errorProductos,
+        fetchProducts,
+        fetchCategories,
+        getProductById,
+        getProductsByCategory,
+        searchProducts,
+        getFeaturedProducts,
+        checkStock,
+
+        // Carrito
         cart,
         setCart,
-        usuarios,
-        setUsuarios,
-        productos,
-        loadingProductos,
-        errorProductos
+        addToCart,
+        removeFromCart,
+        updateCartQuantity,
+        clearCart,
+        getCartTotal,
+        getCartItemsCount
     };
 
     return (
@@ -79,4 +150,5 @@ export const AppProvider = ({ children }) => {
 };
 
 export default AppContext;
+
 
