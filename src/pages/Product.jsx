@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.jsx';
 import Loader from '../components/Loader.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
@@ -8,7 +8,7 @@ import { ArrowLeft, ShoppingCart, Check, AlertCircle, Truck, ShieldCheck } from 
 import clsx from 'clsx';
 
 function Product() {
-    const { productos, loadingProductos, errorProductos, cart, setCart } = useAppContext();
+    const { productos, loadingProductos, errorProductos, cart, addToCart } = useAppContext();
     const { id } = useParams();
     const navigate = useNavigate();
     const CURRENCY_SYMBOL = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
@@ -19,23 +19,18 @@ function Product() {
     const producto = productos.find(p => p.id === parseInt(id));
 
     const handleAddToCart = () => {
+        // Verificar stock disponible
         const productoEnCarrito = cart.find(item => item.id === producto.id);
         const cantidadActualEnCarrito = productoEnCarrito ? productoEnCarrito.cantidad : 0;
+        const cantidadTotal = cantidadActualEnCarrito + quantity;
 
-        if (cantidadActualEnCarrito + quantity > producto.stock) {
+        if (cantidadTotal > producto.stock) {
             alert(`No puedes agregar más de ${producto.stock} unidades. Stock máximo alcanzado.`);
             return;
         }
 
-        if (productoEnCarrito) {
-            setCart(cart.map(item =>
-                item.id === producto.id
-                    ? { ...item, cantidad: item.cantidad + quantity }
-                    : item
-            ));
-        } else {
-            setCart([...cart, { ...producto, cantidad: quantity }]);
-        }
+        // Usar el helper addToCart del contexto
+        addToCart(producto, quantity);
 
         setAdded(true);
         setTimeout(() => setAdded(false), 2000);
