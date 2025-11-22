@@ -20,17 +20,8 @@ export const useOrder = () => {
             // Preparar datos de la orden
             const orderData = {
                 user_id: user.id,
-                user_email: userInfo.email || user.email,
-                user_name: userInfo.name || user.user_metadata?.full_name || '',
-                user_phone: userInfo.phone || user.user_metadata?.phone || '',
-                user_address: userInfo.address || '',
-                subtotal: totals.subtotal,
-                shipping_cost: totals.shipping,
-                tax_amount: totals.tax,
                 total_amount: totals.total,
                 status: 'pending',
-                payment_method: userInfo.paymentMethod || 'pending',
-                notes: userInfo.notes || ''
             };
 
             // Insertar la orden
@@ -46,11 +37,8 @@ export const useOrder = () => {
             const orderItems = cart.map(item => ({
                 order_id: order.id,
                 product_id: item.id,
-                product_name: item.nombre,
-                product_image: item.avatar || item.imagenes?.[0] || '',
                 quantity: item.cantidad,
                 unit_price: item.precio,
-                subtotal: item.precio * item.cantidad
             }));
 
             // Insertar los items de la orden
@@ -234,7 +222,7 @@ export const useOrder = () => {
             for (const item of cart) {
                 const { data: product, error } = await supabase
                     .from('products')
-                    .select('stock, status')
+                    .select('stock')
                     .eq('id', item.id)
                     .single();
 
@@ -243,10 +231,6 @@ export const useOrder = () => {
                     continue;
                 }
 
-                if (!product.status) {
-                    validationErrors.push(`Producto ${item.nombre} no está disponible`);
-                    continue;
-                }
 
                 if (product.stock < item.cantidad) {
                     validationErrors.push(

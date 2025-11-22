@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSupabase } from '../context/SupabaseContext.jsx';
 import { motion } from 'motion/react';
-import { User, Mail, Lock, Phone, MapPin, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Mail, Lock, Phone, MapPin, ArrowRight, AlertCircle, CheckCircle, Sparkles } from 'lucide-react';
 
 function Register() {
     const { register, loading } = useSupabase();
@@ -72,7 +72,7 @@ function Register() {
 
                     <div className="relative z-10">
                         <div className="text-center mb-8">
-                            <h2 className="text-3xl font-bold text-text-main mb-2">Crear Cuenta ✨</h2>
+                            <h2 className="text-3xl font-bold text-text-main mb-2">Crear Cuenta <Sparkles className="text-primary" size={28} /></h2>
                             <p className="text-text-muted">Únete a nuestra comunidad de amantes de las mascotas</p>
                         </div>
 

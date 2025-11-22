@@ -6,6 +6,52 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_API_TOKEN;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Constantes para localStorage
+const STORAGE_KEYS = {
+    SESSION: 'petstore_session',
+    USER: 'petstore_user',
+    IS_AUTHENTICATED: 'petstore_is_authenticated'
+};
+
+// Helpers para localStorage
+const storage = {
+    // Guardar datos en localStorage
+    save: (key, data) => {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+        } catch (error) {
+            console.error(`Error guardando ${key} en localStorage:`, error);
+        }
+    },
+
+    // Cargar datos desde localStorage
+    load: (key) => {
+        try {
+            const item = localStorage.getItem(key);
+            return item ? JSON.parse(item) : null;
+        } catch (error) {
+            console.error(`Error cargando ${key} desde localStorage:`, error);
+            return null;
+        }
+    },
+
+    // Eliminar datos de localStorage
+    remove: (key) => {
+        try {
+            localStorage.removeItem(key);
+        } catch (error) {
+            console.error(`Error eliminando ${key} de localStorage:`, error);
+        }
+    },
+
+    // Limpiar todos los datos de autenticación
+    clearAuth: () => {
+        storage.remove(STORAGE_KEYS.SESSION);
+        storage.remove(STORAGE_KEYS.USER);
+        storage.remove(STORAGE_KEYS.IS_AUTHENTICATED);
+    }
+};
+
 // Crear el contexto
 const SupabaseContext = createContext();
 
@@ -21,17 +67,42 @@ export const useSupabase = () => {
 
 // Provider del contexto
 export const SupabaseProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [session, setSession] = useState(null);
+    // Inicializar estados desde localStorage
+    const [user, setUser] = useState(() => storage.load(STORAGE_KEYS.USER));
+    const [isAuthenticated, setIsAuthenticated] = useState(() => storage.load(STORAGE_KEYS.IS_AUTHENTICATED) || false);
+    const [session, setSession] = useState(() => storage.load(STORAGE_KEYS.SESSION));
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Función helper para actualizar el estado de autenticación y localStorage
+    const updateAuthState = (newSession, newUser = null) => {
+        const userData = newUser || newSession?.user || null;
+        const isAuth = !!userData;
+
+        setSession(newSession);
+        setUser(userData);
+        setIsAuthenticated(isAuth);
+
+        // Guardar en localStorage
+        if (newSession) {
+            storage.save(STORAGE_KEYS.SESSION, newSession);
+        } else {
+            storage.remove(STORAGE_KEYS.SESSION);
+        }
+
+        if (userData) {
+            storage.save(STORAGE_KEYS.USER, userData);
+            storage.save(STORAGE_KEYS.IS_AUTHENTICATED, true);
+        } else {
+            storage.clearAuth();
+        }
+    };
+
     // Verificar la sesión actual al montar el componente
     useEffect(() => {
-        // Obtener la sesión actual
+        // Obtener la sesión actual desde Supabase
         supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            setUser(session?.user ?? null);
+            updateAuthState(session);
             setLoading(false);
         });
 
@@ -39,8 +110,7 @@ export const SupabaseProvider = ({ children }) => {
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-            setUser(session?.user ?? null);
+            updateAuthState(session);
             setLoading(false);
         });
 
@@ -76,8 +146,7 @@ export const SupabaseProvider = ({ children }) => {
 
             if (error) throw error;
 
-            setUser(data.user);
-            setSession(data.session);
+            updateAuthState(data.session, data.user);
 
             return { user: data.user, session: data.session, error: null };
         } catch (err) {
@@ -107,8 +176,7 @@ export const SupabaseProvider = ({ children }) => {
 
             if (error) throw error;
 
-            setUser(data.user);
-            setSession(data.session);
+            updateAuthState(data.session, data.user);
 
             return { user: data.user, session: data.session, error: null };
         } catch (err) {
@@ -133,8 +201,7 @@ export const SupabaseProvider = ({ children }) => {
 
             if (error) throw error;
 
-            setUser(null);
-            setSession(null);
+            updateAuthState(null);
 
             return { error: null };
         } catch (err) {
@@ -280,7 +347,7 @@ export const SupabaseProvider = ({ children }) => {
         session,
         loading,
         error,
-        isAuthenticated: !!user,
+        isAuthenticated,
 
         // Métodos de autenticación
         register,

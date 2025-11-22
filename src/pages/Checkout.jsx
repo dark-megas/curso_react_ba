@@ -2,15 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.jsx';
 import { useSupabase } from "../context/SupabaseContext.jsx";
+import { useOrder } from '../hooks/useOrder.js';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, CreditCard, CheckCircle, AlertTriangle, Truck, Package } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, CreditCard, CheckCircle, AlertTriangle, Truck, Package, Loader2, XCircle } from 'lucide-react';
 import clsx from 'clsx';
 
 function Checkout() {
-    const { cart, setCart } = useAppContext();
+    const { cart, setCart, clearCart } = useAppContext();
     const { getProfile } = useSupabase();
+    const { createOrder, validateCart, loading: orderLoading } = useOrder();
     const [orderPlaced, setOrderPlaced] = useState(false);
+    const [createdOrder, setCreatedOrder] = useState(null);
     const [userInfo, setUserInfo] = useState(null);
+    const [validationErrors, setValidationErrors] = useState([]);
+    const [orderError, setOrderError] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false);
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
 
@@ -70,18 +76,66 @@ function Checkout() {
         ));
     };
 
-    const handlePlaceOrder = () => {
+    const handlePlaceOrder = async () => {
+        // Reset errors
+        setValidationErrors([]);
+        setOrderError(null);
+
+        // Validate user info
         if (!userInfo?.nombre || !userInfo?.email) {
-            alert('Por favor completa tu información de perfil antes de realizar el pedido');
-            navigate('/profile');
+            setOrderError('Por favor completa tu información de perfil antes de realizar el pedido');
+            setTimeout(() => navigate('/profile'), 2000);
             return;
         }
 
-        setOrderPlaced(true);
-        setTimeout(() => {
-            setCart([]);
-            navigate('/products');
-        }, 3000);
+        setIsProcessing(true);
+
+        try {
+            // Step 1: Validate cart
+            const validation = await validateCart(cart);
+
+            if (!validation.valid) {
+                setValidationErrors(validation.errors);
+                setIsProcessing(false);
+                return;
+            }
+
+            // Step 2: Prepare order data
+            const orderUserInfo = {
+                name: userInfo.nombre,
+                email: userInfo.email,
+                phone: userInfo.telefono || '',
+                address: userInfo.direccion || '',
+                paymentMethod: 'pending',
+                notes: ''
+            };
+
+            const totals = {
+                subtotal: subtotal,
+                shipping: envio,
+                tax: impuestos,
+                total: total
+            };
+
+            // Step 3: Create order
+            const { data: order, error } = await createOrder(cart, orderUserInfo, totals);
+
+            if (error) {
+                setOrderError(error);
+                setIsProcessing(false);
+                return;
+            }
+
+            // Step 4: Success - clear cart and show confirmation
+            setCreatedOrder(order);
+            setOrderPlaced(true);
+            clearCart();
+        } catch (err) {
+            console.error('Error al procesar orden:', err);
+            setOrderError('Ocurrió un error inesperado. Por favor intenta nuevamente.');
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const subtotal = calcularSubtotal();
@@ -91,7 +145,7 @@ function Checkout() {
     const tienEnvioGratis = subtotal >= FREE_SHIPPING_THRESHOLD;
     const faltaParaEnvioGratis = FREE_SHIPPING_THRESHOLD - subtotal;
 
-    if (orderPlaced) {
+    if (orderPlaced && createdOrder) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center px-4">
                 <motion.div
@@ -103,12 +157,32 @@ function Checkout() {
                         <CheckCircle size={40} className="text-green-500" />
                     </div>
                     <h2 className="text-2xl font-bold text-text-main mb-2">¡Pedido Realizado!</h2>
-                    <p className="text-text-muted mb-6">Gracias por tu compra, {userInfo.nombre}. Te hemos enviado un correo con los detalles.</p>
+                    <p className="text-text-muted mb-6">Gracias por tu compra, {userInfo?.nombre}. Te hemos enviado un correo con los detalles.</p>
+
+                    <div className="bg-gray-50 p-4 rounded-xl mb-4">
+                        <p className="text-sm text-text-muted mb-1">Número de Pedido</p>
+                        <p className="text-lg font-mono font-bold text-text-main">#{createdOrder.id}</p>
+                    </div>
+
                     <div className="bg-gray-50 p-4 rounded-xl mb-6">
                         <p className="text-sm text-text-muted">Total pagado</p>
-                        <p className="text-2xl font-bold text-primary">{CURRENCY_SYMBOL}{total.toLocaleString('es-AR')} {CURRENCY}</p>
+                        <p className="text-2xl font-bold text-primary">{CURRENCY_SYMBOL}{createdOrder.total_amount.toLocaleString('es-AR')} {CURRENCY}</p>
                     </div>
-                    <p className="text-sm text-text-muted animate-pulse">Redirigiendo a productos...</p>
+
+                    <div className="space-y-3">
+                        <Link
+                            to="/products"
+                            className="block w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl"
+                        >
+                            Seguir Comprando
+                        </Link>
+                        <button
+                            onClick={() => navigate('/profile')}
+                            className="block w-full bg-gray-100 hover:bg-gray-200 text-text-main font-bold py-3 px-6 rounded-xl transition-all"
+                        >
+                            Ver Mis Pedidos
+                        </button>
+                    </div>
                 </motion.div>
             </div>
         );
@@ -253,6 +327,40 @@ function Checkout() {
                         <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 sticky top-24">
                             <h2 className="text-xl font-bold text-text-main mb-6">Resumen del Pedido</h2>
 
+                            {/* Validation Errors */}
+                            {validationErrors.length > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6"
+                                >
+                                    <div className="flex items-center gap-2 text-red-700 font-bold mb-2">
+                                        <XCircle size={20} />
+                                        Problemas con tu carrito
+                                    </div>
+                                    <ul className="text-sm text-red-800 space-y-1">
+                                        {validationErrors.map((error, index) => (
+                                            <li key={index}>• {error}</li>
+                                        ))}
+                                    </ul>
+                                </motion.div>
+                            )}
+
+                            {/* Order Error */}
+                            {orderError && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6"
+                                >
+                                    <div className="flex items-center gap-2 text-red-700 font-bold mb-2">
+                                        <XCircle size={20} />
+                                        Error al procesar pedido
+                                    </div>
+                                    <p className="text-sm text-red-800">{orderError}</p>
+                                </motion.div>
+                            )}
+
                             <div className="space-y-4 mb-6">
                                 <div className="flex justify-between text-text-muted">
                                     <span>Subtotal</span>
@@ -300,16 +408,25 @@ function Checkout() {
 
                                 <button
                                     onClick={handlePlaceOrder}
-                                    disabled={!userInfo?.nombre || !userInfo?.email}
+                                    disabled={!userInfo?.nombre || !userInfo?.email || isProcessing || orderLoading}
                                     className={clsx(
                                         "w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg",
-                                        !userInfo?.nombre || !userInfo?.email
+                                        !userInfo?.nombre || !userInfo?.email || isProcessing || orderLoading
                                             ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                                             : "bg-primary hover:bg-primary-hover text-white hover:shadow-xl hover:-translate-y-1"
                                     )}
                                 >
-                                    <CreditCard size={20} />
-                                    Confirmar Pedido
+                                    {isProcessing || orderLoading ? (
+                                        <>
+                                            <Loader2 size={20} className="animate-spin" />
+                                            Procesando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CreditCard size={20} />
+                                            Confirmar Pedido
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>
