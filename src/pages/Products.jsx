@@ -1,18 +1,15 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.jsx';
 import Loader from '../components/Loader.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
+import ProductCard from '../components/ProductCard.jsx';
+import { motion } from 'motion/react';
 
 function Products() {
     const { productos, loadingProductos, errorProductos, cart, setCart } = useAppContext();
-    const CURRENCY_SYMBOL = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
-    const CURRENCY = import.meta.env.VITE_CURRENCY || 'ARS';
 
     const handleAddToCart = (producto) => {
         const productoEnCarrito = cart.find(item => item.id === producto.id);
-
-        // Validar stock disponible
         const cantidadActualEnCarrito = productoEnCarrito ? productoEnCarrito.cantidad : 0;
 
         if (cantidadActualEnCarrito >= producto.stock) {
@@ -32,47 +29,53 @@ function Products() {
     };
 
     if (loadingProductos) {
-        return <Loader message="Cargando productos..." />;
+        return (
+            <div className="min-h-screen pt-24 flex justify-center">
+                <Loader message="Cargando productos..." />
+            </div>
+        );
     }
 
     if (errorProductos) {
-        return <ErrorMessage message={errorProductos} />;
-    }
-
-    if (!productos || productos.length === 0) {
         return (
-            <div className="no-products-container">
-                <h2>No hay productos disponibles</h2>
-                <p>Por favor, vuelve más tarde</p>
+            <div className="min-h-screen pt-24 px-6">
+                <ErrorMessage message={errorProductos} />
             </div>
         );
     }
 
     return (
-        <div className="products-container">
-            <h2 className="products-title">Nuestros Productos</h2>
-            <div className="products-grid">
-                {productos.map((producto) => (
-                    <div key={producto.id} className="product-card">
-                        <img src={producto.avatar} alt={producto.nombre} className="product-image" />
-                        <div className="product-info">
-                            <h3 className="product-name">{producto.nombre}</h3>
-                            <p className="product-description">{producto.descripcion}</p>
-                            <p className="product-price">{CURRENCY_SYMBOL}{producto.precio.toLocaleString('es-AR')} {CURRENCY}</p>
-                            <p className="product-stock">Stock: {producto.stock} unidades</p>
-                            <div className="product-actions">
-                                <Link to={`/product/${producto.id}`} className="btn-details">Ver Detalles</Link>
-                                <button
-                                    onClick={() => handleAddToCart(producto)}
-                                    className="btn-add-cart"
-                                    disabled={producto.stock === 0}
-                                >
-                                    Agregar al Carrito
-                                </button>
-                            </div>
-                        </div>
+        <div className="min-h-screen bg-background pt-24 pb-16 px-6">
+            <div className="max-w-7xl mx-auto">
+                <div className="mb-10 text-center">
+                    <h1 className="text-4xl font-bold text-text-main mb-4">Nuestros Productos</h1>
+                    <p className="text-text-muted max-w-2xl mx-auto">
+                        Explora nuestra selección de productos premium para tu mascota.
+                    </p>
+                </div>
+
+                {!productos || productos.length === 0 ? (
+                    <div className="text-center py-20 bg-white rounded-3xl shadow-sm">
+                        <h2 className="text-2xl font-bold text-text-main mb-2">No hay productos disponibles</h2>
+                        <p className="text-text-muted">Por favor, vuelve más tarde</p>
                     </div>
-                ))}
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        {productos.map((producto, index) => (
+                            <motion.div
+                                key={producto.id}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: index * 0.05 }}
+                            >
+                                <ProductCard
+                                    product={producto}
+                                    onAddToCart={handleAddToCart}
+                                />
+                            </motion.div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
