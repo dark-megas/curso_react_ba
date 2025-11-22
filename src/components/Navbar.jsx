@@ -6,11 +6,14 @@ import { useAppContext } from '../context/AppContext.jsx';
 import Cart from './Cart.jsx';
 import clsx from 'clsx';
 
-function Navbar({ isAuth }) {
+function Navbar({ isAuth, getProfile }) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { cart, setCart } = useAppContext();
     const location = useLocation();
+    const user_profile = getProfile?.user_metadata;
+    console.log("user_profile", user_profile);
+
 
     useEffect(() => {
         const handleScroll = () => {
@@ -36,6 +39,11 @@ function Navbar({ isAuth }) {
             { label: 'Login', href: '/login' },
             { label: 'Registro', href: '/register' },
         ];
+
+    //Route for role admin
+    const adminLinks = [
+        { label: 'Admin', href: '/admin' },
+    ];
 
     return (
         <motion.nav
@@ -90,6 +98,24 @@ function Navbar({ isAuth }) {
                             </Link>
                         ))}
                     </div>
+
+                    {user_profile?.role === 'admin' && (
+                        <div className="hidden md:flex items-center gap-6">
+                            {adminLinks.map((link) => (
+                                <Link
+                                    key={link.href}
+                                    to={link.href}
+                                    className={clsx(
+                                        'text-sm font-medium transition-colors hover:text-primary flex items-center gap-1',
+                                        location.pathname === link.href ? 'text-primary' : 'text-text-main'
+                                    )}
+                                >
+                                    {link.icon && <link.icon size={16} />}
+                                    {link.label}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Cart - Always visible */}
                     <Cart cart={cart} setCart={setCart} />
