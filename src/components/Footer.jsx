@@ -4,7 +4,7 @@ import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, PawPrint } from 'luc
 
 function Footer() {
     return (
-        <footer className="bg-text-main text-white pt-16 pb-8 mt-auto">
+        <footer className="bg-amber-700/20 border-t border-gray-200 bg-text-main text-white pt-16 pb-8 mt-auto">
             <div className="max-w-7xl mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                     {/* Brand */}

@@ -26,7 +26,7 @@ function Hero() {
                     <h1 className="text-5xl lg:text-7xl font-bold text-text-main leading-tight">
                         Amor y cuidado <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-hover">
-                            para tu mejor amigo
+                            para tu mejor amigo...
                         </span>
                     </h1>
 

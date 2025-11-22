@@ -1,12 +1,12 @@
-import React, {useState, useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {useSupabase} from '../../context/SupabaseContext.jsx';
-import {useAdminAuth} from '../context/AdminAuthContext.jsx';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useSupabase } from '../../context/SupabaseContext.jsx';
+import { useAdminAuth } from '../context/AdminAuthContext.jsx';
 import Prism from "../../components/Prism.jsx";
 
 function AdminLogin() {
-    const {login, loading} = useSupabase();
-    const {isAdmin} = useAdminAuth();
+    const { login, loading } = useSupabase();
+    const { isAdmin } = useAdminAuth();
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -32,7 +32,7 @@ function AdminLogin() {
         e.preventDefault();
         setError('');
 
-        const {user, error: loginError} = await login(formData.email, formData.password);
+        const { user, error: loginError } = await login(formData.email, formData.password);
 
         if (loginError) {
             setError(loginError);
@@ -43,7 +43,7 @@ function AdminLogin() {
                 setError('No tienes permisos de administrador');
                 // Cerrar sesión automáticamente si no es admin
                 // eslint-disable-next-line react-hooks/rules-of-hooks
-                const {logout} = useSupabase();
+                const { logout } = useSupabase();
                 await logout();
             } else {
                 navigate('/admin/dashboard');
@@ -53,7 +53,7 @@ function AdminLogin() {
 
     return (
         <>
-            <div className="bg-black " style={{width: '100%', height: '100%', position: 'fixed'}}>
+            <div className="bg-black " style={{ width: '100%', height: '100%', position: 'fixed' }}>
                 <Prism
                     animationType="3drotate"
                     timeScale={0.5}
@@ -69,15 +69,17 @@ function AdminLogin() {
             <div className="admin-login-container">
                 <div className="admin-login-card">
                     <div className="admin-login-header">
-                        <h1 className="admin-login-logo">PetStore</h1>
-                        <h2 className="admin-login-title">Panel de Administración</h2>
+                        <Link to="/" >
+                            <h1 className="admin-login-logo">PetStore</h1>
+                            <h2 className="admin-login-title">Panel de Administración</h2>
+                        </Link>
                     </div>
 
                     {error && <div className="form-error">{error}</div>}
 
-                    <form onSubmit={handleSubmit} className="admin-login-form" style={{color:"#FFFFFF"}}>
+                    <form onSubmit={handleSubmit} className="admin-login-form" style={{ color: "#FFFFFF" }}>
                         <div className="form-group">
-                            <label style={{color:"white"}}  htmlFor="email">Email de Administrador</label>
+                            <label style={{ color: "white" }} htmlFor="email">Email de Administrador</label>
                             <input
                                 type="email"
                                 id="email"
@@ -91,7 +93,7 @@ function AdminLogin() {
                         </div>
 
                         <div className="form-group">
-                            <label style={{color:"white"}} htmlFor="password">Contraseña</label>
+                            <label style={{ color: "white" }} htmlFor="password">Contraseña</label>
                             <input
                                 type="password"
                                 id="password"

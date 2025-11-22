@@ -2,25 +2,21 @@ import React from 'react';
 import Header from "./Header.jsx";
 import Footer from "./Footer.jsx";
 import Navbar from "./Navbar.jsx";
-import Cart from "./Cart.jsx";
 import '../App.css'
-import { useAppContext } from '../context/AppContext.jsx';
 import { useSupabase } from '../context/SupabaseContext.jsx';
 
-function Layout({children, title}) {
-    const { cart, setCart } = useAppContext();
+function Layout({ children, title }) {
     const { isAuthenticated } = useSupabase();
 
     return (
         <>
-            <Header title={title}/>
+            <Header title={title} />
             <div className="layout">
-                <Navbar isAuth={isAuthenticated}/>
-                <Cart cart={cart} setCart={setCart}/>
+                <Navbar isAuth={isAuthenticated} />
                 <main className="main-content">
                     {children}
                 </main>
-                <Footer/>
+                <Footer />
             </div>
         </>
     );
