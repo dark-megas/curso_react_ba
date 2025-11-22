@@ -1,10 +1,15 @@
 import React from 'react';
+import CircularText from "../../@/components/CircularText.jsx";
 
 function Loader({ message = 'Cargando...' }) {
     return (
         <div className="loader-container">
-            <div className="loader-spinner"></div>
-            <p className="loader-text">{message}</p>
+            <CircularText
+                text={message}
+                onHover="speedUp"
+                spinDuration={20}
+                className="text-black bg-gray-600 "
+            />
         </div>
     );
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAdminAuth } from '../context/AdminAuthContext.jsx';
+import CircularText from "../../../@/components/CircularText.jsx";
 
 function AdminProtectedRoute({ children }) {
     const { isAdmin, loading } = useAdminAuth();
@@ -8,8 +9,12 @@ function AdminProtectedRoute({ children }) {
     if (loading) {
         return (
             <div className="admin-loading-screen">
-                <div className="loading-spinner"></div>
-                <p>Verificando permisos...</p>
+                <CircularText
+                    text="REACT*BITS*COMPONENTS*"
+                    onHover="speedUp"
+                    spinDuration={20}
+                    className="custom-class"
+                />
             </div>
         );
     }

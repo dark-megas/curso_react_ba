@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.jsx';
+import { useSupabase } from "../context/SupabaseContext.jsx";
 
 function Checkout() {
-    const { usuario, cart, setCart } = useAppContext();
+    const {  cart, setCart } = useAppContext();
+    const {  getProfile } = useSupabase();
     const [orderPlaced, setOrderPlaced] = useState(false);
-    const [userInfo, setUserInfo] = useState(usuario);
+    const [userInfo, setUserInfo] = useState(null);
     const navigate = useNavigate();
+    const [profile , setProfile] = useState(null);
 
     const SHIPPING_COST = parseFloat(import.meta.env.VITE_SHIPPING_COST) || 0;
     const FREE_SHIPPING_THRESHOLD = parseFloat(import.meta.env.VITE_FREE_SHIPPING_THRESHOLD) || 50000;
@@ -14,11 +17,21 @@ function Checkout() {
     const CURRENCY_SYMBOL = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
     const CURRENCY = import.meta.env.VITE_CURRENCY || 'ARS';
 
+
     useEffect(() => {
-        if (usuario && usuario.nombre) {
-            setUserInfo(usuario);
-        }
-    }, [usuario]);
+        const setupProfile = async () => {
+            const { profile: userProfile, error } = await getProfile();
+            console.log('Perfil obtenido en Checkout:', userProfile);
+            if (error) {
+                console.error('Error al obtener el perfil:', error);
+            } else if (userProfile) {
+                setProfile(userProfile);
+                setUserInfo(userProfile);
+            }
+        };
+        setupProfile();
+
+    }, []);
 
     const calcularSubtotal = () => {
         return cart.reduce((total, item) => total + (item.precio * item.cantidad), 0);
@@ -61,7 +74,7 @@ function Checkout() {
     };
 
     const handlePlaceOrder = () => {
-        if (!userInfo.nombre || !userInfo.email) {
+        if (!userInfo?.nombre || !userInfo?.email) {
             alert('Por favor completa tu información de perfil antes de realizar el pedido');
             navigate('/profile');
             return;
@@ -162,7 +175,7 @@ function Checkout() {
 
                 <div className="checkout-summary">
                     <h3>Información de Envío</h3>
-                    {!userInfo.nombre || !userInfo.email ? (
+                    {!userInfo?.nombre || !userInfo?.email ? (
                         <div className="checkout-warning">
                             <p>⚠️ Por favor completa tu información de perfil</p>
                             <button onClick={() => navigate('/profile')} className="btn-primary">
