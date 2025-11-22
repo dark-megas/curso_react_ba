@@ -12,7 +12,6 @@ function Navbar({ isAuth, getProfile }) {
     const { cart, setCart } = useAppContext();
     const location = useLocation();
     const user_profile = getProfile?.user_metadata;
-    console.log("user_profile", user_profile);
 
 
     useEffect(() => {
