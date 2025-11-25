@@ -36,7 +36,6 @@ export const useProducts = () => {
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'products' },
                 (payload) => {
-                    console.log('Change received!', payload);
                     if (payload.eventType === 'INSERT') {
                         setProducts((prev) => [payload.new, ...prev]);
                     } else if (payload.eventType === 'UPDATE') {

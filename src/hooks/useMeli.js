@@ -38,14 +38,14 @@ export const useMeli = () => {
                     },
                     external_reference: orderId,
                     back_urls: {
-                        success: window.location.origin + '/success',
-                        failure: window.location.origin + '/failure',
-                        pending: window.location.origin + '/pending'
+                        success: window.location.origin + '/meli/success',
+                        failure: window.location.origin + '/meli/failure',
+                        pending: window.location.origin + '/meli/pending'
                     },
                     redirect_urls: {
-                        success: window.location.origin + '/success',
-                        failure: window.location.origin + '/failure',
-                        pending: window.location.origin + '/pending'
+                        success: window.location.origin + '/meli/success',
+                        failure: window.location.origin + '/meli/failure',
+                        pending: window.location.origin + '/meli/pending'
                     },
                     notification_url: `${supabaseUrl}/functions/v1/meli_checkout`,
                 })
