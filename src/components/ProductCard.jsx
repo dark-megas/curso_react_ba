@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { cva } from 'class-variance-authority';
-import { ShoppingCart, Eye } from 'lucide-react';
+import { ShoppingCart, Eye, Image as ImageIcon } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const buttonVariants = cva(
@@ -33,6 +33,21 @@ function ProductCard({ product, onAddToCart, className }) {
     const { id, nombre, precio, avatar, stock } = product;
     const CURRENCY_SYMBOL = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
 
+    // Parse avatar safely
+    const getMainImage = () => {
+        if (!avatar) return null;
+        if (Array.isArray(avatar)) return avatar[0];
+        try {
+            const parsed = JSON.parse(avatar);
+            if (Array.isArray(parsed)) return parsed[0];
+            return avatar; // Fallback if it's a simple string
+        } catch (e) {
+            return avatar; // Fallback if it's a simple string
+        }
+    };
+
+    const mainImage = getMainImage();
+
     return (
         <motion.div
             whileHover={{ y: -10 }}
@@ -42,14 +57,18 @@ function ProductCard({ product, onAddToCart, className }) {
             )}
         >
             {/* Image Container */}
-            <div className="relative aspect-square overflow-hidden bg-gray-50">
-                <motion.img
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.4 }}
-                    src={avatar}
-                    alt={nombre}
-                    className="w-full h-full object-cover object-center"
-                />
+            <div className="relative aspect-square overflow-hidden bg-gray-50 flex items-center justify-center">
+                {mainImage ? (
+                    <motion.img
+                        whileHover={{ scale: 1.05 }}
+                        transition={{ duration: 0.4 }}
+                        src={mainImage}
+                        alt={nombre}
+                        className="w-full h-full object-cover object-center"
+                    />
+                ) : (
+                    <ImageIcon className="text-gray-300 w-12 h-12" />
+                )}
 
                 {/* Quick Actions Overlay */}
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-[2px]">

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.jsx';
 import { useSupabase } from "../context/SupabaseContext.jsx";
-import { useOrder } from '../hooks/useOrder.js';
+import { useOrders } from '../hooks/useOrders.js';
 import { useMeli } from '../hooks/useMeli.js';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, CreditCard, CheckCircle, AlertTriangle, Truck, Package, Loader2, XCircle } from 'lucide-react';
@@ -11,7 +11,7 @@ import clsx from 'clsx';
 function Checkout() {
     const { cart, setCart, clearCart } = useAppContext();
     const { getProfile } = useSupabase();
-    const { createOrder, validateCart, loading: orderLoading, updateOrder } = useOrder();
+    const { createOrder, validateCart, loading: orderLoading, updateOrder } = useOrders();
     const { createPreference, loading: meliLoading } = useMeli();
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [createdOrder, setCreatedOrder] = useState(null);
