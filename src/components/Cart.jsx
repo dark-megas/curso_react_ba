@@ -142,7 +142,9 @@ function Cart({ cart, setCart }) {
                                             >
                                                 <div className="w-24 h-24 bg-gray-50 rounded-xl overflow-hidden shrink-0 border border-gray-100">
                                                     <img
-                                                        src={item.avatar}
+                                                        src={
+                                                            JSON.parse(item.avatar)[0]
+                                                        }
                                                         alt={item.nombre}
                                                         className="w-full h-full object-cover"
                                                     />

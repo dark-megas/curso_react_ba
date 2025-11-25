@@ -70,6 +70,8 @@ export const useOrders = (isAdmin = false) => {
     // Create Order
     const createOrder = async (cart, userInfo, totals) => {
         try {
+
+            console.log("totals", totals)
             setLoading(true);
             if (!user) throw new Error('Debes iniciar sesión');
 
@@ -126,12 +128,34 @@ export const useOrders = (isAdmin = false) => {
         }
     };
 
+    const updateOrder = async (orderId, data) => {
+        try {
+            const { data, error } = await supabase
+                .from('orders')
+                .update(data)
+                .eq('id', orderId)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return { data, error: null };
+        } catch (err) {
+            return { data: null, error: err.message };
+        }
+    };
+
+    const validateCart = (cart) => {
+        return cart.every(item => item.cantidad > 0);
+    };
+
     return {
         orders,
         loading,
         error,
         createOrder,
         updateOrderStatus,
-        refreshOrders: fetchOrders
+        updateOrder,
+        refreshOrders: fetchOrders,
+        validateCart
     };
 };

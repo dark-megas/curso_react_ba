@@ -94,11 +94,14 @@ function Checkout() {
 
         setIsProcessing(true);
 
+        console.log("cart", cart)
         try {
             // Step 1: Validate cart
             const validation = await validateCart(cart);
 
-            if (!validation.valid) {
+            console.log("validation", validation)
+            if (!validation) {
+                console.log("validation.errors", validation.errors)
                 setValidationErrors(validation.errors);
                 setIsProcessing(false);
                 return;
@@ -123,8 +126,10 @@ function Checkout() {
 
             // Step 3: Create order
             const { data: order, error } = await createOrder(cart, orderUserInfo, totals);
+            console.log("order", order)
 
             if (error) {
+                console.log("error", error)
                 setOrderError(error);
                 setIsProcessing(false);
                 return;
@@ -159,7 +164,7 @@ function Checkout() {
             window.location.href = preference.redirectUrl;
 
         } catch (err) {
-            console.error('Error al procesar orden:', err);
+            console.log("err", err)
             setOrderError('Ocurrió un error inesperado. Por favor intenta nuevamente.');
             setIsProcessing(false);
         }
@@ -246,7 +251,9 @@ function Checkout() {
                                         className="flex gap-4 py-6 border-b border-gray-100 last:border-0"
                                     >
                                         <div className="w-24 h-24 bg-gray-50 rounded-xl p-2 flex-shrink-0">
-                                            <img src={item.avatar} alt={item.nombre} className="w-full h-full object-contain" />
+                                            <img src={
+                                                JSON.parse(item.avatar)[0]
+                                            } alt={item.nombre} className="w-full h-full object-contain" />
                                         </div>
 
                                         <div className="flex-1 flex flex-col justify-between">
@@ -334,7 +341,7 @@ function Checkout() {
                             <h2 className="text-xl font-bold text-text-main mb-6">Resumen del Pedido</h2>
 
                             {/* Validation Errors */}
-                            {validationErrors.length > 0 && (
+                            {validationErrors?.length > 0 && (
                                 <motion.div
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}

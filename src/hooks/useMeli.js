@@ -38,14 +38,14 @@ export const useMeli = () => {
                     },
                     external_reference: orderId,
                     back_urls: {
-                        success: "https://curso-react-ba.vercel.app" + '/success',
-                        failure: "https://curso-react-ba.vercel.app" + '/failure',
-                        pending: "https://curso-react-ba.vercel.app" + '/pending'
+                        success: window.location.origin + '/success',
+                        failure: window.location.origin + '/failure',
+                        pending: window.location.origin + '/pending'
                     },
                     redirect_urls: {
-                        success: "https://curso-react-ba.vercel.app" + '/success',
-                        failure: "https://curso-react-ba.vercel.app" + '/failure',
-                        pending: "https://curso-react-ba.vercel.app" + '/pending'
+                        success: window.location.origin + '/success',
+                        failure: window.location.origin + '/failure',
+                        pending: window.location.origin + '/pending'
                     },
                     notification_url: `${supabaseUrl}/functions/v1/meli_checkout`,
                 })
