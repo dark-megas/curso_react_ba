@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.jsx';
 import { useSupabase } from "../context/SupabaseContext.jsx";
 import { useOrder } from '../hooks/useOrder.js';
+import { useMeli } from '../hooks/useMeli.js';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, CreditCard, CheckCircle, AlertTriangle, Truck, Package, Loader2, XCircle } from 'lucide-react';
 import clsx from 'clsx';
@@ -10,7 +11,8 @@ import clsx from 'clsx';
 function Checkout() {
     const { cart, setCart, clearCart } = useAppContext();
     const { getProfile } = useSupabase();
-    const { createOrder, validateCart, loading: orderLoading } = useOrder();
+    const { createOrder, validateCart, loading: orderLoading, updateOrder } = useOrder();
+    const { createPreference, loading: meliLoading } = useMeli();
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [createdOrder, setCreatedOrder] = useState(null);
     const [userInfo, setUserInfo] = useState(null);
@@ -26,6 +28,7 @@ function Checkout() {
     const CURRENCY_SYMBOL = import.meta.env.VITE_CURRENCY_SYMBOL || '$';
     const CURRENCY = import.meta.env.VITE_CURRENCY || 'ARS';
 
+
     useEffect(() => {
         const setupProfile = async () => {
             const { profile: userProfile, error } = await getProfile();
@@ -36,6 +39,7 @@ function Checkout() {
         };
         setupProfile();
     }, []);
+
 
     const calcularSubtotal = () => {
         return cart.reduce((total, item) => total + (item.precio * item.cantidad), 0);
@@ -106,7 +110,7 @@ function Checkout() {
                 email: userInfo.email,
                 phone: userInfo.telefono || '',
                 address: userInfo.direccion || '',
-                paymentMethod: 'pending',
+                paymentMethod: 'mercadopago',
                 notes: ''
             };
 
@@ -126,17 +130,42 @@ function Checkout() {
                 return;
             }
 
-            // Step 4: Success - clear cart and show confirmation
             setCreatedOrder(order);
-            setOrderPlaced(true);
-            clearCart();
+
+            // Step 4: Create MercadoPago Preference and Redirect
+            const preference = await createPreference(cart, userInfo, order.id);
+
+            if (!preference && !preference.redirectUrl) {
+                //Fallback
+                setOrderError('Error al conectar con MercadoPago. Intenta nuevamente.');
+                setIsProcessing(false);
+            }
+
+            //Step 5: Realease cart
+            await clearCart();
+
+            // Step 6: Update order status
+            await updateOrder(order.id, {
+                status: 'processing',
+                preference_id: preference.id,
+                collector_id: preference.raw_response.collector_id,
+                client_id: preference.raw_response.client_id,
+                operation_type: preference.raw_response.operation_type,
+                url_payment: preference.init_point,
+                url_payment_sandbox: preference.sandbox_init_point,
+            });
+
+            // Step 7: Redirect to MercadoPago
+            window.location.href = preference.redirectUrl;
+
         } catch (err) {
             console.error('Error al procesar orden:', err);
             setOrderError('Ocurrió un error inesperado. Por favor intenta nuevamente.');
-        } finally {
             setIsProcessing(false);
         }
     };
+
+
 
     const subtotal = calcularSubtotal();
     const envio = calcularEnvio();
@@ -146,6 +175,7 @@ function Checkout() {
     const faltaParaEnvioGratis = FREE_SHIPPING_THRESHOLD - subtotal;
 
     if (orderPlaced && createdOrder) {
+        // This state might not be reached if we redirect, but kept for fallback/logic consistency
         return (
             <div className="min-h-screen bg-background flex items-center justify-center px-4">
                 <motion.div
@@ -157,32 +187,8 @@ function Checkout() {
                         <CheckCircle size={40} className="text-green-500" />
                     </div>
                     <h2 className="text-2xl font-bold text-text-main mb-2">¡Pedido Realizado!</h2>
-                    <p className="text-text-muted mb-6">Gracias por tu compra, {userInfo?.nombre}. Te hemos enviado un correo con los detalles.</p>
-
-                    <div className="bg-gray-50 p-4 rounded-xl mb-4">
-                        <p className="text-sm text-text-muted mb-1">Número de Pedido</p>
-                        <p className="text-lg font-mono font-bold text-text-main">#{createdOrder.id}</p>
-                    </div>
-
-                    <div className="bg-gray-50 p-4 rounded-xl mb-6">
-                        <p className="text-sm text-text-muted">Total pagado</p>
-                        <p className="text-2xl font-bold text-primary">{CURRENCY_SYMBOL}{createdOrder.total_amount.toLocaleString('es-AR')} {CURRENCY}</p>
-                    </div>
-
-                    <div className="space-y-3">
-                        <Link
-                            to="/products"
-                            className="block w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl"
-                        >
-                            Seguir Comprando
-                        </Link>
-                        <button
-                            onClick={() => navigate('/profile')}
-                            className="block w-full bg-gray-100 hover:bg-gray-200 text-text-main font-bold py-3 px-6 rounded-xl transition-all"
-                        >
-                            Ver Mis Pedidos
-                        </button>
-                    </div>
+                    <p className="text-text-muted mb-6">Redirigiendo a MercadoPago...</p>
+                    <Loader2 size={40} className="animate-spin mx-auto text-primary" />
                 </motion.div>
             </div>
         );
@@ -408,15 +414,15 @@ function Checkout() {
 
                                 <button
                                     onClick={handlePlaceOrder}
-                                    disabled={!userInfo?.nombre || !userInfo?.email || isProcessing || orderLoading}
+                                    disabled={!userInfo?.nombre || !userInfo?.email || isProcessing || orderLoading || meliLoading}
                                     className={clsx(
                                         "w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg",
-                                        !userInfo?.nombre || !userInfo?.email || isProcessing || orderLoading
+                                        !userInfo?.nombre || !userInfo?.email || isProcessing || orderLoading || meliLoading
                                             ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                                             : "bg-primary hover:bg-primary-hover text-white hover:shadow-xl hover:-translate-y-1"
                                     )}
                                 >
-                                    {isProcessing || orderLoading ? (
+                                    {isProcessing || orderLoading || meliLoading ? (
                                         <>
                                             <Loader2 size={20} className="animate-spin" />
                                             Procesando...
@@ -424,7 +430,7 @@ function Checkout() {
                                     ) : (
                                         <>
                                             <CreditCard size={20} />
-                                            Confirmar Pedido
+                                            Pagar con MercadoPago
                                         </>
                                     )}
                                 </button>

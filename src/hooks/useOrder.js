@@ -49,34 +49,41 @@ export const useOrder = () => {
 
             if (itemsError) throw itemsError;
 
-            // Actualizar stock de productos
-            for (const item of cart) {
-                const { error: stockError } = await supabase.rpc('decrease_product_stock', {
-                    product_id: item.id,
-                    quantity: item.cantidad
-                });
-
-                // Si no existe la función RPC, hacer update manual
-                if (stockError && stockError.code === '42883') {
-                    const { data: product } = await supabase
-                        .from('products')
-                        .select('stock')
-                        .eq('id', item.id)
-                        .single();
-
-                    if (product) {
-                        await supabase
-                            .from('products')
-                            .update({ stock: product.stock - item.cantidad })
-                            .eq('id', item.id);
-                    }
-                }
-            }
 
             const completeOrder = { ...order, order_items: items };
             return { data: completeOrder, error: null };
         } catch (err) {
             console.error('Error al crear orden:', err);
+            setError(err.message);
+            return { data: null, error: err.message };
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    //Actualizar datos del pedido 
+    const updateOrder = async (orderId, data) => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            if (!user) {
+                throw new Error('Debes iniciar sesión para actualizar una orden');
+            }
+
+            const { data: order, error: orderError } = await supabase
+                .from('orders')
+                .update({ ...data })
+                .eq('id', orderId)
+                .eq('user_id', user.id)
+                .select()
+                .single();
+
+            if (orderError) throw orderError;
+
+            return { data: order, error: null };
+        } catch (err) {
+            console.error('Error al actualizar orden:', err);
             setError(err.message);
             return { data: null, error: err.message };
         } finally {
@@ -256,6 +263,7 @@ export const useOrder = () => {
         loading,
         error,
         createOrder,
+        updateOrder,
         getUserOrders,
         getOrderById,
         cancelOrder,
