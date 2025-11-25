@@ -19,6 +19,7 @@ import CategoriesAdmin from "./admin/pages/CategoriesAdmin.jsx";
 import OrdersAdmin from "./admin/pages/OrdersAdmin.jsx";
 import UsersAdmin from "./admin/pages/UsersAdmin.jsx";
 import AdminProtectedRoute from "./admin/components/AdminProtectedRoute.jsx";
+import FallbackMeli from "./components/FallbackMeli.jsx";
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 
 // Componente de ruta protegida
@@ -94,6 +95,30 @@ function AppRoutes() {
                         <Layout title="Checkout">
                             <ProtectedRoute>
                                 <Checkout />
+                            </ProtectedRoute>
+                        </Layout>
+                    } />
+
+                    <Route path="/meli/success" element={
+                        <Layout title="Success">
+                            <ProtectedRoute>
+                                <FallbackMeli status="success" />
+                            </ProtectedRoute>
+                        </Layout>
+                    } />
+
+                    <Route path="/meli/failure" element={
+                        <Layout title="Failure">
+                            <ProtectedRoute>
+                                <FallbackMeli status="failure" />
+                            </ProtectedRoute>
+                        </Layout>
+                    } />
+
+                    <Route path="/meli/pending" element={
+                        <Layout title="Pending">
+                            <ProtectedRoute>
+                                <FallbackMeli status="pending" />
                             </ProtectedRoute>
                         </Layout>
                     } />

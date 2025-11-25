@@ -93,15 +93,10 @@ function Checkout() {
         }
 
         setIsProcessing(true);
-
-        console.log("cart", cart)
         try {
             // Step 1: Validate cart
             const validation = await validateCart(cart);
-
-            console.log("validation", validation)
             if (!validation) {
-                console.log("validation.errors", validation.errors)
                 setValidationErrors(validation.errors);
                 setIsProcessing(false);
                 return;
@@ -126,10 +121,8 @@ function Checkout() {
 
             // Step 3: Create order
             const { data: order, error } = await createOrder(cart, orderUserInfo, totals);
-            console.log("order", order)
 
             if (error) {
-                console.log("error", error)
                 setOrderError(error);
                 setIsProcessing(false);
                 return;
@@ -164,7 +157,7 @@ function Checkout() {
             window.location.href = preference.redirectUrl;
 
         } catch (err) {
-            console.log("err", err)
+            console.error("err", err)
             setOrderError('Ocurrió un error inesperado. Por favor intenta nuevamente.');
             setIsProcessing(false);
         }

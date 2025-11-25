@@ -40,6 +40,26 @@ export const useOrders = (isAdmin = false) => {
         }
     };
 
+    //Get order by id
+    const getOrderById = async (orderId) => {
+        try {
+            setError(null);
+
+            const { data, error } = await supabase
+                .from('orders')
+                .select('*')
+                .eq('id', orderId)
+                .single();
+
+            if (error) throw error;
+            return data;
+        } catch (err) {
+            console.error('Error fetching order:', err);
+            return null;
+        }
+    };
+
+
     // Realtime Subscription
     useEffect(() => {
         if (!user) return;
@@ -52,8 +72,7 @@ export const useOrders = (isAdmin = false) => {
                 'postgres_changes',
                 { event: '*', schema: 'public', table: 'orders' },
                 (payload) => {
-                    console.log('Order change received!', payload);
-                    // If not admin, only refresh if the order belongs to the user
+
                     if (!isAdmin && payload.new && payload.new.user_id !== user.id) {
                         return;
                     }
@@ -71,7 +90,6 @@ export const useOrders = (isAdmin = false) => {
     const createOrder = async (cart, userInfo, totals) => {
         try {
 
-            console.log("totals", totals)
             setLoading(true);
             if (!user) throw new Error('Debes iniciar sesión');
 
@@ -128,11 +146,11 @@ export const useOrders = (isAdmin = false) => {
         }
     };
 
-    const updateOrder = async (orderId, data) => {
+    const updateOrder = async (orderId, Info) => {
         try {
-            const { data, error } = await supabase
+            const { data: order, error } = await supabase
                 .from('orders')
-                .update(data)
+                .update(Info)
                 .eq('id', orderId)
                 .select()
                 .single();
@@ -153,6 +171,7 @@ export const useOrders = (isAdmin = false) => {
         loading,
         error,
         createOrder,
+        getOrderById,
         updateOrderStatus,
         updateOrder,
         refreshOrders: fetchOrders,
