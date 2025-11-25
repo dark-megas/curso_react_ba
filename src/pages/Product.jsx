@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext.jsx';
 import Loader from '../components/Loader.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
-import { motion } from 'motion/react';
-import { ArrowLeft, ShoppingCart, Check, AlertCircle, Truck, ShieldCheck } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ArrowLeft, ShoppingCart, Check, AlertCircle, Truck, ShieldCheck, Image as ImageIcon } from 'lucide-react';
 import clsx from 'clsx';
 
 function Product() {
@@ -15,8 +15,30 @@ function Product() {
     const CURRENCY = import.meta.env.VITE_CURRENCY || 'ARS';
     const [quantity, setQuantity] = useState(1);
     const [added, setAdded] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
 
     const producto = productos.find(p => p.id === parseInt(id));
+
+    // Parse avatar safely
+    const getImages = () => {
+        if (!producto?.avatar) return [];
+        if (Array.isArray(producto.avatar)) return producto.avatar;
+        try {
+            const parsed = JSON.parse(producto.avatar);
+            if (Array.isArray(parsed)) return parsed;
+            return [producto.avatar];
+        } catch (e) {
+            return [producto.avatar];
+        }
+    };
+
+    const images = getImages();
+
+    useEffect(() => {
+        if (images.length > 0) {
+            setSelectedImage(images[0]);
+        }
+    }, [producto]);
 
     const handleAddToCart = () => {
         // Verificar stock disponible
@@ -86,14 +108,40 @@ function Product() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-[2.5rem] p-8 shadow-lg relative overflow-hidden group"
+                        className="space-y-4"
                     >
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/10 rounded-bl-full -z-0 transition-transform group-hover:scale-110 duration-700" />
-                        <img
-                            src={producto.avatar}
-                            alt={producto.nombre}
-                            className="w-full h-[400px] md:h-[500px] object-contain relative z-10 drop-shadow-xl transition-transform duration-500 group-hover:scale-105"
-                        />
+                        {/* Main Image */}
+                        <div className="bg-white rounded-[2.5rem] p-8 shadow-lg relative overflow-hidden group aspect-square flex items-center justify-center">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/10 rounded-bl-full -z-0 transition-transform group-hover:scale-110 duration-700" />
+                            <AnimatePresence mode="wait">
+                                <motion.img
+                                    key={selectedImage}
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                    src={selectedImage}
+                                    alt={producto.nombre}
+                                    className="w-full h-full object-contain relative z-10 drop-shadow-xl"
+                                />
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Thumbnails */}
+                        {images.length > 1 && (
+                            <div className="flex gap-4 overflow-x-auto pb-2">
+                                {images.map((img, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setSelectedImage(img)}
+                                        className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${selectedImage === img ? 'border-primary ring-2 ring-primary/20' : 'border-transparent hover:border-gray-200'
+                                            }`}
+                                    >
+                                        <img src={img} alt={`${producto.nombre} ${index}`} className="w-full h-full object-cover" />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </motion.div>
 
                     {/* Info Section */}

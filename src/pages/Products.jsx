@@ -113,7 +113,7 @@ function Products() {
                         >
                             Todos
                         </button>
-                        {categories.map((category) => (
+                        {categories?.map((category) => (
                             <button
                                 key={category.id}
                                 onClick={() => setSelectedCategory(category.slug || category.nombre)}

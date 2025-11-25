@@ -13,6 +13,7 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fortawesome/react-fontawesome": "^3.1.0",
+    "@mercadopago/sdk-react": "^1.0.6",
     "@supabase/supabase-js": "^2.84.0",
     "@tailwindcss/vite": "^4.1.14",
     "class-variance-authority": "^0.7.1",

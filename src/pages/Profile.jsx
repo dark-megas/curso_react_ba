@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useSupabase } from '../context/SupabaseContext.jsx';
+import { useOrders } from '../hooks/useOrders.js';
 import { motion } from 'motion/react';
-import { User, Mail, Phone, MapPin, Edit2, Save, X, Shield, Camera } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Edit2, Save, X, Shield, Camera, Package, Clock, CheckCircle, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import clsx from 'clsx';
+import { AnimatePresence } from 'framer-motion';
 
 function Profile() {
-    const { user, getProfile, updateProfile, loading } = useSupabase();
+    const { user, getProfile, updateProfile, loading: profileLoading } = useSupabase();
+    const { orders, loading: ordersLoading } = useOrders(); // Fetch user orders by default
+
     const [isEditing, setIsEditing] = useState(false);
     const [profile, setProfile] = useState(null);
     const [formData, setFormData] = useState({
@@ -16,6 +20,7 @@ function Profile() {
     });
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [expandedOrder, setExpandedOrder] = useState(null);
 
     // Cargar el perfil al montar el componente
     useEffect(() => {
@@ -77,6 +82,27 @@ function Profile() {
         setError('');
     };
 
+    const toggleOrder = (orderId) => {
+        setExpandedOrder(expandedOrder === orderId ? null : orderId);
+    };
+
+    const statusConfig = {
+        pending: { label: 'Pendiente', color: 'text-yellow-600 bg-yellow-50 border-yellow-200', icon: Clock },
+        processing: { label: 'En Proceso', color: 'text-blue-600 bg-blue-50 border-blue-200', icon: Package },
+        completed: { label: 'Completado', color: 'text-emerald-600 bg-emerald-50 border-emerald-200', icon: CheckCircle },
+        cancelled: { label: 'Cancelado', color: 'text-red-600 bg-red-50 border-red-200', icon: XCircle },
+    };
+
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('es-AR', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+    };
+
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(amount);
+    };
+
     if (!profile) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
@@ -87,7 +113,9 @@ function Profile() {
 
     return (
         <div className="min-h-screen bg-background pt-24 pb-12 px-4 md:px-8">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto space-y-8">
+
+                {/* Profile Card */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -261,17 +289,122 @@ function Profile() {
                                     </button>
                                     <button
                                         type="submit"
-                                        disabled={loading}
+                                        disabled={profileLoading}
                                         className="px-8 py-3 rounded-xl font-bold bg-primary hover:bg-primary-hover text-white transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 flex items-center gap-2"
                                     >
                                         <Save size={20} />
-                                        {loading ? 'Guardando...' : 'Guardar Cambios'}
+                                        {profileLoading ? 'Guardando...' : 'Guardar Cambios'}
                                     </button>
                                 </div>
                             </form>
                         )}
                     </div>
                 </motion.div>
+
+                {/* Orders Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-gray-100 p-8"
+                >
+                    <h2 className="text-2xl font-bold text-text-main mb-6 flex items-center gap-3">
+                        <Package className="text-primary" size={28} />
+                        Mis Pedidos
+                    </h2>
+
+                    {ordersLoading ? (
+                        <div className="text-center py-12 text-text-muted">Cargando pedidos...</div>
+                    ) : orders.length === 0 ? (
+                        <div className="text-center py-12 bg-gray-50 rounded-2xl border border-gray-100">
+                            <Package size={48} className="mx-auto text-gray-300 mb-4" />
+                            <p className="text-text-muted font-medium">Aún no has realizado ningún pedido.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {orders.map((order) => {
+                                const StatusIcon = statusConfig[order.status]?.icon || Clock;
+                                const isExpanded = expandedOrder === order.id;
+
+                                return (
+                                    <div key={order.id} className="border border-gray-100 rounded-2xl overflow-hidden transition-all hover:shadow-md">
+                                        {/* Order Header */}
+                                        <div
+                                            onClick={() => toggleOrder(order.id)}
+                                            className="bg-gray-50 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-3 bg-white rounded-xl border border-gray-200">
+                                                    <Package size={24} className="text-primary" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-text-main">Pedido #{order.id}</p>
+                                                    <p className="text-sm text-text-muted">{formatDate(order.created_at)}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between md:justify-end gap-6 flex-1">
+                                                <div className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-2 ${statusConfig[order.status]?.color}`}>
+                                                    <StatusIcon size={14} />
+                                                    {statusConfig[order.status]?.label}
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-bold text-text-main">{formatCurrency(order.total_amount)}</p>
+                                                    <p className="text-xs text-text-muted">{order.order_items?.length} items</p>
+                                                </div>
+                                                {isExpanded ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+                                            </div>
+                                        </div>
+
+                                        {/* Order Details (Expanded) */}
+                                        <AnimatePresence>
+                                            {isExpanded && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className="border-t border-gray-100"
+                                                >
+                                                    <div className="p-4 space-y-3">
+                                                        {order.order_items?.map((item) => (
+                                                            <div key={item.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                                                        {item.product?.avatar ? (
+                                                                            <img
+                                                                                src={Array.isArray(item.product.avatar) ? item.product.avatar[0] : JSON.parse(item.product.avatar)[0]}
+                                                                                alt={item.product.nombre}
+                                                                                className="w-full h-full object-cover"
+                                                                                onError={(e) => {
+                                                                                    e.target.onerror = null;
+                                                                                    e.target.src = item.product.avatar; // Fallback for old string format
+                                                                                }}
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                                                <Package size={20} />
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="font-medium text-text-main text-sm">{item.product?.nombre || 'Producto eliminado'}</p>
+                                                                        <p className="text-xs text-text-muted">Cant: {item.quantity}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <p className="font-medium text-text-main text-sm">{formatCurrency(item.unit_price)}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </motion.div>
+
             </div>
         </div>
     );

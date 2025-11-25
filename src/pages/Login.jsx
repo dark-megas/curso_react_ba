@@ -93,6 +93,7 @@ function Login() {
                                         value={formData.password}
                                         onChange={handleChange}
                                         required
+                                        autoComplete="off"
                                         className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-gray-50 focus:bg-white"
                                         placeholder="••••••••"
                                     />
