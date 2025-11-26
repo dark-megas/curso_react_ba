@@ -129,9 +129,12 @@ function Checkout() {
             }
 
             setCreatedOrder(order);
+            //costo = envio + impuestos
+            const costo = envio + impuestos;
+
 
             // Step 4: Create MercadoPago Preference and Redirect
-            const preference = await createPreference(cart, userInfo, order.id);
+            const preference = await createPreference(cart,costo, userInfo, order.id);
 
             if (!preference && !preference.redirectUrl) {
                 //Fallback

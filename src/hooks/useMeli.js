@@ -4,7 +4,7 @@ export const useMeli = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const createPreference = async (items, payer, orderId) => {
+    const createPreference = async (items,cost, payer, orderId) => {
         setLoading(true);
         setError(null);
         try {
@@ -22,6 +22,18 @@ export const useMeli = () => {
                 currency_id: 'ARS' // Default to ARS as per docs
             }));
 
+            //agregamos ul nuevo item para el costo de envio
+            if(cost && cost > 0){
+                mpItems.push({
+                    title: 'Costo de envío',
+                    description: 'Costo de envío del pedido',
+                    quantity: 1,
+                    unit_price: parseFloat(cost),
+                    currency_id: 'ARS'
+                });
+            }
+
+
             const response = await fetch(`${supabaseUrl}/functions/v1/meli_checkout`, {
                 method: 'POST',
                 headers: {
@@ -36,6 +48,7 @@ export const useMeli = () => {
                         name: payer?.nombre || payer?.name,
                         surname: payer?.apellido || payer?.surname || ''
                     },
+                    cost: cost,
                     external_reference: orderId,
                     back_urls: {
                         success: window.location.origin + '/meli/success',
