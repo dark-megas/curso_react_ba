@@ -6,6 +6,7 @@ import ErrorMessage from '../components/ErrorMessage.jsx';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, ShoppingCart, Check, AlertCircle, Truck, ShieldCheck, Image as ImageIcon } from 'lucide-react';
 import clsx from 'clsx';
+import { toast } from 'react-toastify';
 
 function Product() {
     const { productos, loadingProductos, errorProductos, cart, addToCart } = useAppContext();
@@ -47,7 +48,8 @@ function Product() {
         const cantidadTotal = cantidadActualEnCarrito + quantity;
 
         if (cantidadTotal > producto.stock) {
-            alert(`No puedes agregar más de ${producto.stock} unidades. Stock máximo alcanzado.`);
+            //alert(`No puedes agregar más de ${producto.stock} unidades. Stock máximo alcanzado.`);
+            toast.error(`No puedes agregar más de ${producto.stock} unidades. Stock máximo alcanzado.`);gi
             return;
         }
 

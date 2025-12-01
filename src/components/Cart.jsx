@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingCart, X, Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
+import {toast} from "react-toastify";
 
 function Cart({ cart, setCart }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -45,7 +46,8 @@ function Cart({ cart, setCart }) {
         // Validar stock disponible
         const item = cart.find(item => item.id === id);
         if (item && cantidad > item.stock) {
-            alert(`No puedes agregar más de ${item.stock} unidades. Stock máximo alcanzado.`);
+
+            toast.error(`No puedes agregar más de ${item.stock} unidades. Stock máximo alcanzado.`);
             return;
         }
 

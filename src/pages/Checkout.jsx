@@ -7,6 +7,7 @@ import { useMeli } from '../hooks/useMeli.js';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, CreditCard, CheckCircle, AlertTriangle, Truck, Package, Loader2, XCircle } from 'lucide-react';
 import clsx from 'clsx';
+import { toast } from 'react-toastify';
 
 function Checkout() {
     const { cart, setCart, clearCart } = useAppContext();
@@ -71,7 +72,7 @@ function Checkout() {
 
         const item = cart.find(item => item.id === id);
         if (item && cantidad > item.stock) {
-            alert(`No puedes agregar más de ${item.stock} unidades. Stock máximo alcanzado.`);
+            toast.error(`No puedes agregar más de ${item.stock} unidades. Stock máximo alcanzado.`);
             return;
         }
 
