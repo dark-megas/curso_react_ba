@@ -16,6 +16,8 @@ import {
     Images
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import CurrencyInput from 'react-currency-input-field';
+import {toast} from "react-toastify";
 
 function ProductsAdmin() {
     const { products, loading, createProduct, updateProduct, deleteProduct } = useProducts();
@@ -37,8 +39,6 @@ function ProductsAdmin() {
         detalles: ''
     });
 
-    // Estado para el input de precio con máscara
-    const [priceInput, setPriceInput] = useState('');
 
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -49,19 +49,6 @@ function ProductsAdmin() {
     };
 
     // Handler específico para precio con máscara
-    const handlePriceChange = (e) => {
-        const value = e.target.value;
-
-        // Permitir solo números y un punto decimal
-        const cleanValue = value.replace(/[^0-9.]/g, '');
-
-        // Evitar múltiples puntos decimales
-        if ((cleanValue.match(/\./g) || []).length > 1) return;
-
-        setPriceInput(cleanValue);
-        setFormData({ ...formData, precio: cleanValue });
-    };
-
     const handleCategoryToggle = (categorySlug) => {
         setSelectedCategories(prev =>
             prev.includes(categorySlug)
@@ -72,7 +59,6 @@ function ProductsAdmin() {
 
     const resetForm = () => {
         setFormData({ nombre: '', descripcion: '', precio: '', avatar: [], stock: '', detalles: '' });
-        setPriceInput('');
         setSelectedCategories([]);
         setEditingProduct(null);
         setShowModal(false);
@@ -103,7 +89,8 @@ function ProductsAdmin() {
             stock: product.stock || '',
             detalles: product.detalles || ''
         });
-        setPriceInput(product.precio ? product.precio.toString() : '');
+
+
         setSelectedCategories(product.categoria ? product.categoria.split(',').map(c => c.trim()) : []);
         setShowModal(true);
     };
@@ -111,8 +98,8 @@ function ProductsAdmin() {
     const handleDelete = async (id) => {
         if (window.confirm('¿Estás seguro de eliminar este producto?')) {
             const { error } = await deleteProduct(id);
-            if (error) setError(error);
-            else setSuccess('Producto eliminado correctamente');
+            if (error) toast.error("Error al eliminar el producto: " + error);
+            else toast.success("Producto eliminado correctamente");
         }
     };
 
@@ -120,17 +107,17 @@ function ProductsAdmin() {
         if (!formData.nombre || formData.nombre.trim() === '') {
             return 'El nombre del producto es obligatorio.';
         }
-
         const price = parseFloat(formData.precio);
-        if (isNaN(price) || price < 0) {
+        if (isNaN(price) || price <= 0) {
             return 'El precio debe ser un número válido y no puede ser negativo.';
         }
 
         const stock = parseFloat(formData.stock);
-        if (isNaN(stock) || stock < 0 || !Number.isInteger(stock)) {
-            return 'El stock debe ser un número entero positivo.';
+        if (isNaN(stock) || stock <= 0 || !Number.isInteger(stock)) {
+            return 'El stock debe ser un número entero válido y no puede ser negativo.';
         }
 
+        //return "Datos válidos";
         return null;
     };
 
@@ -140,7 +127,8 @@ function ProductsAdmin() {
 
         const validationError = validateForm();
         if (validationError) {
-            setError(validationError);
+            //setError(validationError);
+            toast.error("Error: " + validationError);
             return;
         }
 
@@ -159,9 +147,11 @@ function ProductsAdmin() {
         const { error } = await action;
 
         if (error) {
-            setError(error);
+            //setError(error);
+            toast.error("Error: " + error);
         } else {
-            setSuccess(editingProduct ? 'Producto actualizado' : 'Producto creado');
+            //setSuccess(editingProduct ? 'Producto actualizado' : 'Producto creado');
+            toast.success(editingProduct ? 'Producto actualizado correctamente' : 'Producto creado correctamente');
             resetForm();
         }
     };
@@ -213,20 +203,20 @@ function ProductsAdmin() {
                     </button>
                 </div>
 
-                {/* Mensajes de Feedback */}
-                <AnimatePresence>
-                    {(success || error) && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
-                            className={`p-4 rounded-lg flex items-center gap-2 ${success ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}
-                        >
-                            <AlertCircle size={20} />
-                            {success || error}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                {/*/!* Mensajes de Feedback *!/*/}
+                {/*<AnimatePresence>*/}
+                {/*    {(success || error) && (*/}
+                {/*        <motion.div*/}
+                {/*            initial={{ opacity: 0, y: -10 }}*/}
+                {/*            animate={{ opacity: 1, y: 0 }}*/}
+                {/*            exit={{ opacity: 0 }}*/}
+                {/*            className={`p-4 rounded-lg flex items-center gap-2 ${success ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}*/}
+                {/*        >*/}
+                {/*            <AlertCircle size={20} />*/}
+                {/*            {success || error}*/}
+                {/*        </motion.div>*/}
+                {/*    )}*/}
+                {/*</AnimatePresence>*/}
 
                 {/* Tabla de Productos */}
                 <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
@@ -417,14 +407,16 @@ function ProductsAdmin() {
                                                     <div>
                                                         <label className="block text-sm font-medium text-slate-700 mb-1">Precio <span className="text-red-500">*</span></label>
                                                         <div className="relative">
-                                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
-                                                            <input
-                                                                type="text"
+                                                            <CurrencyInput
+                                                                id="precio"
                                                                 name="precio"
-                                                                value={priceInput}
-                                                                onChange={handlePriceChange}
-                                                                required
                                                                 placeholder="0.00"
+                                                                defaultValue={formData.precio}
+                                                                decimalsLimit={2}
+                                                                onValueChange={(value) => {
+                                                                    setFormData({ ...formData, precio: value });
+                                                                }}
+                                                                prefix="$"
                                                                 className="w-full pl-7 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none transition-all"
                                                             />
                                                         </div>
