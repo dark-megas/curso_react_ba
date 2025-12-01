@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
-import { AppProvider, useAppContext } from "./context/AppContext.jsx";
-import { SupabaseProvider, useSupabase } from "./context/SupabaseContext.jsx";
-import { AdminAuthProvider } from "./admin/context/AdminAuthContext.jsx";
+import {useEffect} from 'react'
+import {AppProvider, useAppContext} from "./context/AppContext.jsx";
+import {SupabaseProvider, useSupabase} from "./context/SupabaseContext.jsx";
+import {AdminAuthProvider} from "./admin/context/AdminAuthContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -20,166 +20,170 @@ import OrdersAdmin from "./admin/pages/OrdersAdmin.jsx";
 import UsersAdmin from "./admin/pages/UsersAdmin.jsx";
 import AdminProtectedRoute from "./admin/components/AdminProtectedRoute.jsx";
 import FallbackMeli from "./components/FallbackMeli.jsx";
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import {Routes, Route, Navigate, useLocation} from 'react-router-dom'
+//import toastify
+import {ToastContainer} from 'react-toastify';
 
 // Componente de ruta protegida
-function ProtectedRoute({ children }) {
-    const { isAuthenticated } = useSupabase();
+function ProtectedRoute({children}) {
+    const {isAuthenticated} = useSupabase();
     const location = useLocation();
 
     //Si tiene productos en el carrito y no está autenticado, redirige a registro
     if (location.pathname === '/checkout' && !isAuthenticated) {
-        return <Navigate to="/register" replace />;
+        return <Navigate to="/register" replace/>;
     }
 
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/login" replace/>;
     }
     return children;
 }
 
 function Logout() {
-    const { logout } = useSupabase();
+    const {logout} = useSupabase();
+    const {clearCart} = useAppContext();
 
     useEffect(() => {
+        clearCart();
         logout();
     }, [logout]);
 
-    return <Navigate to="/" />;
+    return <Navigate to="/"/>;
 }
 
 function AppRoutes() {
-    const { loadingProductos } = useAppContext();
+    const {loadingProductos} = useAppContext();
 
     return (
         <>
             {loadingProductos ? (
-                <Loader message="Cargando aplicación..." />
+                <Loader message="Cargando aplicación..."/>
             ) : (
                 <Routes>
                     <Route path="/" element={
                         <Layout title="Inicio">
-                            <Home />
-                        </Layout>} />
+                            <Home/>
+                        </Layout>}/>
 
                     <Route path="/login" element={
                         <Layout title="Iniciar Sesión">
-                            <Login />
-                        </Layout>} />
+                            <Login/>
+                        </Layout>}/>
 
                     <Route path="/register" element={
                         <Layout title="Registrarse">
-                            <Register />
-                        </Layout>} />
+                            <Register/>
+                        </Layout>}/>
 
                     <Route path="/products" element={
                         <Layout title="Productos">
-                            <Products />
-                        </Layout>} />
+                            <Products/>
+                        </Layout>}/>
 
                     <Route path="/product/:id" element={
                         <Layout title="Detalle del Producto">
-                            <Product />
+                            <Product/>
                         </Layout>
-                    } />
+                    }/>
 
                     <Route path="/profile" element={
                         <Layout title="Perfil">
                             <ProtectedRoute>
-                                <Profile />
+                                <Profile/>
                             </ProtectedRoute>
                         </Layout>
-                    } />
+                    }/>
 
                     <Route path="/checkout" element={
                         <Layout title="Checkout">
                             <ProtectedRoute>
-                                <Checkout />
+                                <Checkout/>
                             </ProtectedRoute>
                         </Layout>
-                    } />
+                    }/>
 
                     <Route path="/meli/success" element={
                         <Layout title="Success">
                             <ProtectedRoute>
-                                <FallbackMeli status="success" />
+                                <FallbackMeli status="success"/>
                             </ProtectedRoute>
                         </Layout>
-                    } />
+                    }/>
 
                     <Route path="/meli/failure" element={
                         <Layout title="Failure">
                             <ProtectedRoute>
-                                <FallbackMeli status="failure" />
+                                <FallbackMeli status="failure"/>
                             </ProtectedRoute>
                         </Layout>
-                    } />
+                    }/>
 
                     <Route path="/meli/pending" element={
                         <Layout title="Pending">
                             <ProtectedRoute>
-                                <FallbackMeli status="pending" />
+                                <FallbackMeli status="pending"/>
                             </ProtectedRoute>
                         </Layout>
-                    } />
+                    }/>
 
                     <Route path="/contact"
-                        element={
-                            <Layout title="Contacto">
-                                <Contact />
-                            </Layout>
-                        } />
+                           element={
+                               <Layout title="Contacto">
+                                   <Contact/>
+                               </Layout>
+                           }/>
 
                     <Route path="*"
-                        element={
-                            <Layout title="Página no encontrada">
-                                <h1>404 Not Found</h1>
-                            </Layout>
-                        } />
+                           element={
+                               <Layout title="Página no encontrada">
+                                   <h1>404 Not Found</h1>
+                               </Layout>
+                           }/>
 
                     {/*Logout*/}
                     <Route path="/logout" element={
                         <Layout title="Logout">
-                            <Logout />
+                            <Logout/>
 
                             <h1>Has cerrado sesión</h1>
                         </Layout>
-                    } />
+                    }/>
 
                     {/* Admin Routes */}
-                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/admin/login" element={<AdminLogin/>}/>
 
                     <Route path="/admin/dashboard" element={
                         <AdminProtectedRoute>
-                            <Dashboard />
+                            <Dashboard/>
                         </AdminProtectedRoute>
-                    } />
+                    }/>
 
                     <Route path="/admin/products" element={
                         <AdminProtectedRoute>
-                            <ProductsAdmin />
+                            <ProductsAdmin/>
                         </AdminProtectedRoute>
-                    } />
+                    }/>
 
                     <Route path="/admin/categories" element={
                         <AdminProtectedRoute>
-                            <CategoriesAdmin />
+                            <CategoriesAdmin/>
                         </AdminProtectedRoute>
-                    } />
+                    }/>
 
                     <Route path="/admin/orders" element={
                         <AdminProtectedRoute>
-                            <OrdersAdmin />
+                            <OrdersAdmin/>
                         </AdminProtectedRoute>
-                    } />
+                    }/>
 
                     <Route path="/admin/users" element={
                         <AdminProtectedRoute>
-                            <UsersAdmin />
+                            <UsersAdmin/>
                         </AdminProtectedRoute>
-                    } />
+                    }/>
 
-                    <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                    <Route path="/admin" element={<Navigate to="/admin/dashboard" replace/>}/>
 
                 </Routes>
             )}
@@ -192,8 +196,20 @@ function App() {
         <SupabaseProvider>
             <AdminAuthProvider>
                 <AppProvider>
-                    <AppRoutes />
+                    <ToastContainer
+                        position="bottom-right"
+                        autoClose={3000}
+                        hideProgressBar={false}
+                        newestOnTop={false}
+                        closeOnClick
+                        rtl={false}
+                        pauseOnFocusLoss
+                        draggable
+                        pauseOnHover
+                        theme="colored"/>
+                        <AppRoutes/>
                 </AppProvider>
+
             </AdminAuthProvider>
         </SupabaseProvider>
     )

@@ -1,13 +1,14 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useAppContext } from '../context/AppContext.jsx';
+import React, {useState, useMemo, useEffect} from 'react';
+import {useAppContext} from '../context/AppContext.jsx';
 import Loader from '../components/Loader.jsx';
 import ErrorMessage from '../components/ErrorMessage.jsx';
 import ProductCard from '../components/ProductCard.jsx';
-import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, Filter } from 'lucide-react';
+import {motion, AnimatePresence} from 'motion/react';
+import {Search, X, Filter} from 'lucide-react';
+import {toast} from 'react-toastify';
 
 function Products() {
-    const { productos, categories, loadingProductos, errorProductos, addToCart, cart } = useAppContext();
+    const {productos, categories, loadingProductos, errorProductos, addToCart, cart} = useAppContext();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState(null);
 
@@ -16,12 +17,14 @@ function Products() {
         const cantidadActualEnCarrito = productoEnCarrito ? productoEnCarrito.cantidad : 0;
 
         if (cantidadActualEnCarrito >= producto.stock) {
-            alert(`No puedes agregar más de ${producto.stock} unidades. Stock máximo alcanzado.`);
+            //alert(`No puedes agregar más de ${producto.stock} unidades. Stock máximo alcanzado.`);
+            toast.error(`No puedes agregar más de ${producto.stock} unidades. Stock máximo alcanzado.`);
             return;
         }
 
         // Usar el helper addToCart del contexto
         addToCart(producto, 1);
+        toast.success(`Se agregó ${producto.nombre} al carrito.`);
     };
 
     // Filtrar productos según búsqueda y categoría
@@ -49,7 +52,7 @@ function Products() {
     if (loadingProductos) {
         return (
             <div className="min-h-screen pt-24 flex justify-center">
-                <Loader message="Cargando productos..." />
+                <Loader message="Cargando productos..."/>
             </div>
         );
     }
@@ -57,7 +60,7 @@ function Products() {
     if (errorProductos) {
         return (
             <div className="min-h-screen pt-24 px-6">
-                <ErrorMessage message={errorProductos} />
+                <ErrorMessage message={errorProductos}/>
             </div>
         );
     }
@@ -79,7 +82,7 @@ function Products() {
                     {/* Search Bar */}
                     <div className="relative max-w-2xl mx-auto">
                         <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={20}/>
                             <input
                                 type="text"
                                 placeholder="Buscar productos..."
@@ -92,7 +95,7 @@ function Products() {
                                     onClick={clearSearch}
                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-primary transition-colors"
                                 >
-                                    <X size={20} />
+                                    <X size={20}/>
                                 </button>
                             )}
                         </div>
@@ -101,7 +104,7 @@ function Products() {
                     {/* Category Filters */}
                     <div className="flex items-center justify-center gap-3 flex-wrap">
                         <div className="flex items-center gap-2 text-text-muted">
-                            <Filter size={18} />
+                            <Filter size={18}/>
                             <span className="text-sm font-medium">Categorías:</span>
                         </div>
                         <button
@@ -109,7 +112,7 @@ function Products() {
                             className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${selectedCategory === null
                                 ? 'bg-primary text-white shadow-lg'
                                 : 'bg-white text-text-muted hover:bg-gray-50 border border-gray-200'
-                                }`}
+                            }`}
                         >
                             Todos
                         </button>
@@ -120,7 +123,7 @@ function Products() {
                                 className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${selectedCategory === (category.slug || category.nombre)
                                     ? 'bg-primary text-white shadow-lg'
                                     : 'bg-white text-text-muted hover:bg-gray-50 border border-gray-200'
-                                    }`}
+                                }`}
                             >
                                 {category.nombre}
                             </button>
@@ -136,12 +139,13 @@ function Products() {
                 {/* Products Grid */}
                 {filteredProducts.length === 0 ? (
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{opacity: 0, y: 20}}
+                        animate={{opacity: 1, y: 0}}
                         className="text-center py-20 bg-white rounded-3xl shadow-sm"
                     >
-                        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Search size={40} className="text-gray-400" />
+                        <div
+                            className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Search size={40} className="text-gray-400"/>
                         </div>
                         <h2 className="text-2xl font-bold text-text-main mb-2">
                             {searchTerm || selectedCategory !== 'all'
@@ -169,18 +173,18 @@ function Products() {
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={`${searchTerm}-${selectedCategory}`}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.3 }}
+                            initial={{opacity: 0}}
+                            animate={{opacity: 1}}
+                            exit={{opacity: 0}}
+                            transition={{duration: 0.3}}
                             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
                         >
                             {filteredProducts.map((producto, index) => (
                                 <motion.div
                                     key={producto.id}
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: index * 0.05 }}
+                                    initial={{opacity: 0, scale: 0.9}}
+                                    animate={{opacity: 1, scale: 1}}
+                                    transition={{delay: index * 0.05}}
                                 >
                                     <ProductCard
                                         product={producto}
