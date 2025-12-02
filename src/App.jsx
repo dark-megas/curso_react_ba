@@ -21,7 +21,6 @@ import UsersAdmin from "./admin/pages/UsersAdmin.jsx";
 import AdminProtectedRoute from "./admin/components/AdminProtectedRoute.jsx";
 import FallbackMeli from "./components/FallbackMeli.jsx";
 import {Routes, Route, Navigate, useLocation} from 'react-router-dom'
-//import toastify
 import {ToastContainer} from 'react-toastify';
 
 // Componente de ruta protegida
@@ -52,11 +51,23 @@ function Logout() {
     return <Navigate to="/"/>;
 }
 
+function ScrollToTop() {
+    const { pathname } = useLocation();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        console.log('Scroll to top on route change');
+    }, [pathname]);
+
+    return null;
+}
+
 function AppRoutes() {
     const {loadingProductos} = useAppContext();
 
     return (
         <>
+            <ScrollToTop />
             {loadingProductos ? (
                 <Loader message="Cargando aplicación..."/>
             ) : (
