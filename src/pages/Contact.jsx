@@ -63,7 +63,7 @@ function Contact() {
                                 </div>
 
                                 <div className="flex items-start gap-4">
-                                    <div className="bg-secondary/10 p-3 rounded-xl text-secondary">
+                                    <div className="bg-primary/10 p-3 rounded-xl text-primary">
                                         <Phone size={24} />
                                     </div>
                                     <div>
@@ -74,7 +74,7 @@ function Contact() {
                                 </div>
 
                                 <div className="flex items-start gap-4">
-                                    <div className="bg-accent/20 p-3 rounded-xl text-yellow-600">
+                                    <div className="bg-primary/10 p-3 rounded-xl text-primary">
                                         <MapPin size={24} />
                                     </div>
                                     <div>

@@ -161,6 +161,23 @@ function Navbar({ isAuth, getProfile }) {
                                     {link.label}
                                 </Link>
                             ))}
+
+                            {user_profile?.role === 'admin' && (
+                                <>
+                                    <hr className="border-gray-100" />
+                                    {adminLinks.map((link) => (
+                                        <Link
+                                            key={link.href}
+                                            to={link.href}
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="text-text-main hover:text-primary font-medium flex items-center gap-2"
+                                        >
+                                            {link.icon && <link.icon size={16} />}
+                                            {link.label}
+                                        </Link>
+                                    ))}
+                                </>
+                            )}
                         </div>
                     </motion.div>
                 )}
